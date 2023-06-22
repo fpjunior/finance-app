@@ -155,7 +155,7 @@ export default function ModalForm() {
                 colors={["#4f80c3", "#c661eb", "#ee8183"]}
                 style={styles.button}
               >
-                <Text style={styles.titleButton}>save</Text>
+                <Text style={styles.titleButton}>Salvar</Text>
               </LinearGradient>
             </TouchableOpacity>
           </View>

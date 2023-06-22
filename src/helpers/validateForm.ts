@@ -17,15 +17,15 @@ export const useValidate = (values: InputValue, checkSelected: string) => {
   }
 
   if (values.money !== moneyValue) {
-    errors.money = "Tiene que ser un número";
+    errors.money = "Tem que ser um número";
   }
 
   if (!values.description) {
-    errors.description = "Este campo es requerido";
+    errors.description = "Este campo é obrigatório";
   }
 
   if (!checkSelected) {
-    errors.check = "Tiene que seleccionar una opción";
+    errors.check = "Tem que selecionar uma opção";
   }
 
   return errors;
