@@ -16,23 +16,23 @@ export default function CardMonthPrevious() {
     (item) => item.currentMonth === previousMonthName
   );
 
-  //filtro los ingresos del mes pasado
+  //filtro los entradas del mes pasado
   const filterIncomePreviousMonth = filterPreviousMonth.filter(
     (item) => item.transactionType === "Income"
   );
 
-  //sumo los ingresos del mes pasado
+  //sumo los entradas del mes pasado
   const totalIncomePreviousMonth = filterIncomePreviousMonth.reduce(
     (accumulador, currentValue) => accumulador + Number(currentValue.money),
     0
   );
 
-  //filtro los gastos del mes pasado
+  //filtro saídas del mes pasado
   const filterExpensePreviousMonth = filterPreviousMonth.filter(
     (item) => item.transactionType === "Expenses"
   );
 
-  //sumo los gastos del mes pasado
+  //sumo saídas del mes pasado
   const totalExpensePreviousMonth = filterExpensePreviousMonth.reduce(
     (accumulador, currentValue) => accumulador + Number(currentValue.money),
     0

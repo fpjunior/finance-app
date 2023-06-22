@@ -102,13 +102,13 @@ export default function ModalForm() {
             <View>
               <Text style={styles.title}>
                 {objectToEdit !== null
-                  ? "Editar Transferencia"
-                  : "Agregar Transferencia"}
+                  ? "Editar Movimentação"
+                  : "Adicionar Movimentação"}
               </Text>
               <View>
                 <TextInput
                   style={styles.inputAmountMoney}
-                  placeholder="$10.000.00"
+                  placeholder="R$10.000.00"
                   selectionColor="#4f80c3"
                   keyboardType="numeric"
                   value={inputValue.money}
@@ -120,7 +120,7 @@ export default function ModalForm() {
                 <View>
                   <TextInput
                     style={styles.input}
-                    placeholder="Netflix, Amazon..."
+                    placeholder="Combustível, Almoço..."
                     selectionColor="#4f80c3"
                     value={inputValue.description}
                     onChangeText={(textValue) =>

@@ -33,7 +33,7 @@ export default function HomeScreen({ navigation }: Prop) {
   const { handleEditTransaction } = useTransactionContext();
 
   const handleDeleteTransaction = (description: string, id: string) => {
-    Alert.alert("Estas seguro que lo queres eliminar?", `${description}`, [
+    Alert.alert("Tem certeza que deseja deletar?", `${description}`, [
       {
         text: "Cancelar",
         style: "cancel",
@@ -67,7 +67,7 @@ export default function HomeScreen({ navigation }: Prop) {
         data={data}
         keyExtractor={(_, index) => index.toString()}
         showsVerticalScrollIndicator={false}
-        ListHeaderComponent={<Card titleList="transferencias" />}
+        ListHeaderComponent={<Card titleList="transferências" />}
         contentContainerStyle={{ paddingBottom: 90 }}
         renderItem={({ item }) => {
           return <ListItemTransactions item={item} />;

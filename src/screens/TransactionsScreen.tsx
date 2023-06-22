@@ -27,11 +27,11 @@ type Prop = {
 
 const tabs = [
   {
-    name: "Ingresos",
+    name: "Entradas",
     type: "Income",
   },
   {
-    name: "Gastos",
+    name: "Saidas",
     type: "Expenses",
   },
 ];

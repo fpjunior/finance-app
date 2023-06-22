@@ -37,7 +37,7 @@ export default function ExpensesListTransactions() {
         </>
       ) : (
         <View style={styles.dataEmpty}>
-          <Text style={styles.titleDataEmpty}>No hay ningun Gasto!</Text>
+          <Text style={styles.titleDataEmpty}>Sem nenhuma movimentação</Text>
         </View>
       )}
     </View>

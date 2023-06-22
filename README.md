@@ -1,4 +1,4 @@
-# Control de gastos
+# Finance App
 
 <table>
 <tr>
@@ -12,13 +12,13 @@
 Clone the project
 
 ```bash
-  git clone https://github.com/MarceeloDominguez/control-de-gastos-app.git
+  git clone https://github.com/fpjunior/finance-app
 ```
 
 Go to the project directory
 
 ```bash
-  cd control-de-gastos-app
+  cd finance-app
 ```
 
 Install dependencies

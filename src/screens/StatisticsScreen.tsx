@@ -33,31 +33,31 @@ export default function StatisticsScreen({ navigation }: Prop) {
   let indiceComa = data[0]?.date.indexOf(",");
   let newDate = data[0]?.date.substring(indiceComa + 4);
 
-  //filtro todos los ingresos
+  //filtro todos los entradas
   const filterIncome = data.filter((item) => item.transactionType === "Income");
 
-  //filtro los ingresos por mes
+  //filtro los entradas por mes
   const incomeForMonth = filterIncome.filter(
     (item) => item.currentMonth === currentMonth
   );
 
-  //sumo los ingresos por mes
+  //sumo los entradas por mes
   const totalIncomeForMonth = incomeForMonth.reduce(
     (accumulador, currenValue) => accumulador + Number(currenValue.money),
     0
   );
 
-  //filtro todos los gastos
+  //filtro todos saídas
   const filterExpenses = data.filter(
     (item) => item.transactionType === "Expenses"
   );
 
-  //filtro los gastos por mes
+  //filtro saídas por mes
   const expensesForMonth = filterExpenses.filter(
     (item) => item.currentMonth === currentMonth
   );
 
-  //sumo los gastos por mes
+  //sumo saídas por mes
   const totalExpenseForMonth = expensesForMonth.reduce(
     (accumulador, currenValue) => accumulador + Number(currenValue.money),
     0
@@ -66,7 +66,7 @@ export default function StatisticsScreen({ navigation }: Prop) {
   const totalMonth = totalIncomeForMonth - totalExpenseForMonth;
 
   const dataBar = {
-    labels: ["Gastos", "Ingresos"],
+    labels: ["Saídas", "Entradas"],
     legend: ["L1"],
     data: [
       [totalExpenseForMonth, 0],
@@ -90,7 +90,7 @@ export default function StatisticsScreen({ navigation }: Prop) {
               color={Color.icon}
             />
           </TouchableOpacity>
-          <Text style={styles.titleHeader}>Estadisticas</Text>
+          <Text style={styles.titleHeader}>Estatística</Text>
         </View>
         {data.length > 0 ? (
           <>
@@ -122,12 +122,12 @@ export default function StatisticsScreen({ navigation }: Prop) {
                     style={[styles.dot, { backgroundColor: Color.expense }]}
                   />
                   <Text style={[styles.textFooter, { marginRight: 5 }]}>
-                    Gastos
+                    Saídas
                   </Text>
                   <View
                     style={[styles.dot, { backgroundColor: Color.income }]}
                   />
-                  <Text style={styles.textFooter}>Ingresos</Text>
+                  <Text style={styles.textFooter}>Entradas</Text>
                 </View>
               </View>
             </View>
@@ -143,7 +143,7 @@ export default function StatisticsScreen({ navigation }: Prop) {
         ) : (
           <View style={styles.dataEmpty}>
             <Text style={styles.titleDataEmpty}>
-              No hay ninguna estadistica para mostrar.
+              Não há dados para mostrar.
             </Text>
           </View>
         )}

@@ -25,7 +25,7 @@ export default function CardStaticsResumen({ ...prop }: Prop) {
             <AntDesign name="arrowup" size={15} color="#fff" />
           </View>
           <View>
-            <Text style={styles.title}>Ingresos</Text>
+            <Text style={styles.title}>Entradas</Text>
             <Text style={styles.money}>
               {formatQuantity(totalIncomeForMonth)}
             </Text>
@@ -36,7 +36,7 @@ export default function CardStaticsResumen({ ...prop }: Prop) {
             <AntDesign name="arrowdown" size={15} color="#fff" />
           </View>
           <View>
-            <Text style={styles.title}>Gastos</Text>
+            <Text style={styles.title}>Saídas</Text>
             <Text style={styles.money}>
               {formatQuantity(totalExpenseForMonth)}
             </Text>

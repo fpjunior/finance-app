@@ -6,11 +6,11 @@ import { Color } from "../constants/theme";
 
 const options = [
   {
-    name: "Ingresos",
+    name: "Entradas",
     type: "Income",
   },
   {
-    name: "Gastos",
+    name: "Saídas",
     type: "Expenses",
   },
 ];

@@ -35,7 +35,7 @@ export default function IncomeListTransactions() {
         </>
       ) : (
         <View style={styles.dataEmpty}>
-          <Text style={styles.titleDataEmpty}>No hay ningun Ingreso!</Text>
+          <Text style={styles.titleDataEmpty}>Sem nenhuma entrada</Text>
         </View>
       )}
     </View>
