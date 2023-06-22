@@ -34,7 +34,7 @@ export default function Card({ titleList }: Prop) {
             {newDate2} - {newDate}
           </Text>
         ) : (
-          <Text style={styles.dataEmpty}>No hay Ingresos ni Gastos</Text>
+          <Text style={styles.dataEmpty}>Não tem nenhuma movimentação</Text>
         )}
         <Text style={styles.total}>{formatQuantity(total)}</Text>
         <View style={styles.containerFooter}>
@@ -43,7 +43,7 @@ export default function Card({ titleList }: Prop) {
               <AntDesign name="arrowup" size={15} color={Color.income} />
             </View>
             <View>
-              <Text style={styles.title}>Ingresos</Text>
+              <Text style={styles.title}>Entradas</Text>
               <Text style={styles.money}>{formatQuantity(totalIncome)}</Text>
             </View>
           </View>
@@ -52,7 +52,7 @@ export default function Card({ titleList }: Prop) {
               <AntDesign name="arrowdown" size={15} color={Color.expense} />
             </View>
             <View>
-              <Text style={styles.title}>Gastos</Text>
+              <Text style={styles.title}>Saídas</Text>
               <Text style={styles.money}>{formatQuantity(totalExpenses)}</Text>
             </View>
           </View>

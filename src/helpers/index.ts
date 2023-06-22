@@ -10,9 +10,9 @@ export const formattedDate = date.setLocale("es").toFormat("cccc, d LLL y");
 
 //formatear el precio
 export const formatQuantity = (quantity: number) => {
-  return Number(quantity).toLocaleString("es-AR", {
+  return Number(quantity).toLocaleString("pt-BR", {
     style: "currency",
-    currency: "ARS",
+    currency: "BRL",
   });
 };
 
