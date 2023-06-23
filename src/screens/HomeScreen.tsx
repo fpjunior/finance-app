@@ -10,7 +10,7 @@ import Card from "../components/Card";
 import { Color } from "../constants/theme";
 import FloatingButton from "../components/FloatingButton";
 import ListItemTransactions from "../components/ListItemTransactions";
-import { useStoreTransaction } from "../store/store";
+import { backupData, useStoreTransaction } from "../store/store";
 import { SwipeListView } from "react-native-swipe-list-view";
 import { AntDesign } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
@@ -44,7 +44,15 @@ export default function HomeScreen({ navigation }: Prop) {
 
   return (
     <SafeAreaView style={styles.container}>
+ 
       <View style={styles.containerHeader}>
+      <TouchableOpacity
+      style={styles.wrapIcon}
+      activeOpacity={0.8}
+      onPress={backupData}
+    >
+      <Ionicons name="cloud-upload-outline" size={18} color={Color.icon} />
+    </TouchableOpacity>
         <TouchableOpacity
           style={styles.wrapIcon}
           activeOpacity={0.8}

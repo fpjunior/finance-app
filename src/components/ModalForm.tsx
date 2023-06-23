@@ -16,6 +16,8 @@ import { useStoreTransaction } from "../store/store";
 import { currentMonth, formattedDate, getCurrentTimestamp } from "../helpers";
 import { useTransactionContext } from "../context/AppContext";
 import { useValidate } from "../helpers/validateForm";
+import RNDateTimePicker from '@react-native-community/datetimepicker';
+import { DateTime } from "luxon";
 
 export default function ModalForm() {
   const [sent, setSent] = useState(false);
@@ -26,6 +28,7 @@ export default function ModalForm() {
   const [inputValue, setInputValue] = useState({
     money: "",
     description: "",
+    date: "",
   });
 
   //para validar que solo se envie un numero
@@ -37,20 +40,37 @@ export default function ModalForm() {
     setInputValue({ ...inputValue, [valueName]: textValue });
   };
 
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+
+  const handleDateChange = (date: any) => {
+    setIsDatePickerOpen(false);
+    setSelectedDate(date);
+  };
+
+  const openDatePicker = () => {
+    setIsDatePickerOpen(true);
+  };
+
+  const closeDatePicker = () => {
+    setIsDatePickerOpen(false);
+  };
+
   useEffect(() => {
     if (objectToEdit !== null) {
       setInputValue({
         money: objectToEdit.money,
         description: objectToEdit.description,
+        date: objectToEdit.date,
       });
       setCheckSelected(objectToEdit.transactionType);
     }
     if (!modalVisible) {
-      setInputValue({ money: "", description: "" });
+      setInputValue({ money: "", description: "", date: ""});
       setCheckSelected("");
       setSent(false);
     }
-  }, [modalVisible]);
+  }, [modalVisible, selectedDate]);
 
   const handleSubmit = () => {
     setSent(true); //para mostrar el error en la pantalla
@@ -63,21 +83,24 @@ export default function ModalForm() {
     )
       return;
 
+      const dateTime = DateTime.fromJSDate(selectedDate);
+      const formattedDate2 = dateTime.setLocale("pt-BR").toFormat("cccc, d LLL y");
     if (objectToEdit !== null) {
+      
       //si hay un objeto para editar, edito el item.
-      updateTransaction(inputValue, itemId, checkSelected);
+      updateTransaction({ ...inputValue, date: formattedDate2 }, itemId, checkSelected);
     } else {
       //sino agrego un item nuevo
       addTransaction(
-        inputValue,
+        { ...inputValue, date: selectedDate.toLocaleDateString('pt-BR') },
         checkSelected,
         getCurrentTimestamp(),
-        formattedDate,
-        currentMonth
+        formattedDate2,
+        currentMonth,
       );
     }
 
-    setInputValue({ money: "", description: "" });
+    setInputValue({ money: "", description: "", date: "", });
     setCheckSelected("");
     closeModal();
   };
@@ -115,6 +138,29 @@ export default function ModalForm() {
                   onChangeText={(textValue) => handleChange("money", textValue)}
                 />
                 {sent && <Text style={styles.errorMoney}>{errors.money}</Text>}
+              </View>
+              <View>
+                <Text>Data do Registro:</Text>
+                <TouchableOpacity onPress={openDatePicker}>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Selecionar Data"
+                    value={selectedDate ? selectedDate.toLocaleString() : ''}
+                    editable={false}
+                    onChangeText={(textValue) => handleChange("date", textValue)}
+                  />
+                </TouchableOpacity>
+                {isDatePickerOpen && (
+                  <RNDateTimePicker
+                    mode="datetime"
+                    value={selectedDate || new Date()}
+                    onChange={(event, date: any) => {
+                      handleDateChange(date);
+                      closeDatePicker();
+                        
+                    }}
+                  />
+                )}
               </View>
               <View>
                 <View>

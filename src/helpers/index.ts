@@ -6,7 +6,7 @@ export const getCurrentTimestamp = () =>
 
 //formatear fecha con luxon
 const date = DateTime.local();
-export const formattedDate = date.setLocale("es").toFormat("cccc, d LLL y");
+export const formattedDate = date.setLocale("pt-BR").toFormat("cccc, d LLL y");
 
 //formatear el precio
 export const formatQuantity = (quantity: number) => {
@@ -17,4 +17,4 @@ export const formatQuantity = (quantity: number) => {
 };
 
 //mes actual
-export const currentMonth = date.setLocale("es").toFormat("LLL");
+export const currentMonth = date.setLocale("pt-BR").toFormat("LLL");
