@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   SafeAreaView,
   Alert,
+  Button, Platform
 } from "react-native";
 import Card from "../components/Card";
 import { Color } from "../constants/theme";
@@ -18,6 +19,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTransactionContext } from "../context/AppContext";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamsList } from "../navigation/Navigation";
+import { shareAsync } from 'expo-sharing';
+import * as FileSystem from 'expo-file-system';
+import * as DocumentPicker from 'expo-document-picker';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamsList,
@@ -42,17 +46,87 @@ export default function HomeScreen({ navigation }: Prop) {
     ]);
   };
 
+  const downloadFromUrl = async () => {
+    const filename = "data.json";
+    const jsonData = JSON.stringify(data);
+
+    const result = await FileSystem.writeAsStringAsync(
+      FileSystem.documentDirectory + filename,
+      jsonData,
+      {
+        encoding: FileSystem.EncodingType.UTF8,
+      }
+    );
+
+    console.log(result);
+
+    save(FileSystem.documentDirectory + filename, filename, "application/json");
+  };
+
+  const save = async (uri: any, filename: any, mimetype: any) => {
+    if (Platform.OS === "android") {
+      const permissions = await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync();
+      if (permissions.granted) {
+        const base64 = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+        await FileSystem.StorageAccessFramework.createFileAsync(permissions.directoryUri, filename, mimetype)
+          .then(async (uri) => {
+            await FileSystem.writeAsStringAsync(uri, base64, { encoding: FileSystem.EncodingType.Base64 });
+          })
+          .catch(e => console.log(e));
+      } else {
+        shareAsync(uri);
+      }
+    } else {
+      shareAsync(uri);
+    }
+  };
+
+  const importData = async () => {
+    try {
+      const file = await DocumentPicker.getDocumentAsync();
+  
+      if (file.type === 'success' && file.uri) {
+        const fileExtension = file.name.split('.').pop();
+  
+        if (fileExtension === 'json') {
+          const cacheDirectory = FileSystem.cacheDirectory || FileSystem.documentDirectory; // Use documentDirectory se cacheDirectory não estiver disponível
+          const cacheFilePath = cacheDirectory + 'uploads/' + file.name;
+          await FileSystem.copyAsync({ from: file.uri, to: cacheFilePath });
+  
+          const fileContent = await FileSystem.readAsStringAsync(cacheFilePath);
+          const importedData = JSON.parse(fileContent);
+  
+          // Aqui você pode atualizar o estado ou fazer qualquer outra manipulação dos dados importados
+  
+          console.log(importedData);
+        } else {
+          console.log('Formato de arquivo inválido. Por favor, selecione um arquivo JSON.');
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  
+
   return (
     <SafeAreaView style={styles.container}>
- 
       <View style={styles.containerHeader}>
-      <TouchableOpacity
-      style={styles.wrapIcon}
-      activeOpacity={0.8}
-      onPress={backupData}
-    >
-      <Ionicons name="cloud-upload-outline" size={18} color={Color.icon} />
-    </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.wrapIcon}
+          activeOpacity={0.8}
+          onPress={downloadFromUrl}
+        >
+          <Ionicons name="cloud-upload-outline" size={18} color={Color.icon} />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.wrapIcon}
+          activeOpacity={0.8}
+          onPress={importData}
+        >
+          <Ionicons name="archive-outline" size={18} color={Color.icon} />
+        </TouchableOpacity>
         <TouchableOpacity
           style={styles.wrapIcon}
           activeOpacity={0.8}

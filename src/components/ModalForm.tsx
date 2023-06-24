@@ -140,10 +140,9 @@ export default function ModalForm() {
                 {sent && <Text style={styles.errorMoney}>{errors.money}</Text>}
               </View>
               <View>
-                <Text>Data do Registro:</Text>
                 <TouchableOpacity onPress={openDatePicker}>
                   <TextInput
-                    style={styles.input}
+                    style={styles.inputAmountMoney}
                     placeholder="Selecionar Data"
                     value={selectedDate ? selectedDate.toLocaleString() : ''}
                     editable={false}
