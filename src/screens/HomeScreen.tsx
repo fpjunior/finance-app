@@ -47,7 +47,8 @@ export default function HomeScreen({ navigation }: Prop) {
   };
 
   const downloadFromUrl = async () => {
-    const filename = "data.json";
+    const dataAtual = new Date().toLocaleString('pt-br').split("/").join('-').split(' ').join('-');
+    const filename = 'bkp-finance-app-' + dataAtual + '.json';
     const jsonData = JSON.stringify(data);
 
     const result = await FileSystem.writeAsStringAsync(
@@ -57,9 +58,7 @@ export default function HomeScreen({ navigation }: Prop) {
         encoding: FileSystem.EncodingType.UTF8,
       }
     );
-
     console.log(result);
-
     save(FileSystem.documentDirectory + filename, filename, "application/json");
   };
 
@@ -84,20 +83,20 @@ export default function HomeScreen({ navigation }: Prop) {
   const importData = async () => {
     try {
       const file = await DocumentPicker.getDocumentAsync();
-  
+
       if (file.type === 'success' && file.uri) {
         const fileExtension = file.name.split('.').pop();
-  
+
         if (fileExtension === 'json') {
           const cacheDirectory = FileSystem.cacheDirectory || FileSystem.documentDirectory; // Use documentDirectory se cacheDirectory não estiver disponível
           const cacheFilePath = cacheDirectory + 'uploads/' + file.name;
           await FileSystem.copyAsync({ from: file.uri, to: cacheFilePath });
-  
+
           const fileContent = await FileSystem.readAsStringAsync(cacheFilePath);
           const importedData = JSON.parse(fileContent);
-  
+
           // Aqui você pode atualizar o estado ou fazer qualquer outra manipulação dos dados importados
-  
+
           console.log(importedData);
         } else {
           console.log('Formato de arquivo inválido. Por favor, selecione um arquivo JSON.');
@@ -107,7 +106,7 @@ export default function HomeScreen({ navigation }: Prop) {
       console.log(error);
     }
   };
-  
+
 
   return (
     <SafeAreaView style={styles.container}>
