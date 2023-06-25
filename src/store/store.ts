@@ -21,6 +21,7 @@ type Action = {
     currentMonth: string
   ) => void;
   deleteTransaction: (id: string) => void;
+  updateData: (newData: Transaction[]) => void;
   updateTransaction: (
     newItem: ValueInput | undefined,
     itemId: string | null,
@@ -32,7 +33,6 @@ export const useStoreTransaction = create(
   persist<State & Action>(
     (set) => ({
       data: [],
-
       //agregar un elemento
       addTransaction: (
         value: ValueInput,
@@ -55,6 +55,13 @@ export const useStoreTransaction = create(
           ...state,
           data: state.data.filter((item) => item.id !== id),
         })),
+
+        updateData: (newData: Transaction[]) =>
+        set((state) => ({
+          ...state,
+          data: newData,
+        })),
+
 
       //editar un elemento
       updateTransaction: (

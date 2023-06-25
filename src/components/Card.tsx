@@ -31,7 +31,7 @@ export default function Card({ titleList }: Prop) {
       >
         {data.length > 0 ? (
           <Text style={styles.dates}>
-            {newDate2} - {newDate}
+           {newDate} - {newDate2}
           </Text>
         ) : (
           <Text style={styles.dataEmpty}>Não tem nenhuma movimentação</Text>

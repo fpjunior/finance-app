@@ -1,4 +1,3 @@
-import React from "react";
 import {
   View,
   StyleSheet,
@@ -22,6 +21,8 @@ import { RootStackParamsList } from "../navigation/Navigation";
 import { shareAsync } from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
 import * as DocumentPicker from 'expo-document-picker';
+import React, { useEffect, useState } from "react";
+
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamsList,
@@ -33,8 +34,9 @@ type Prop = {
 };
 
 export default function HomeScreen({ navigation }: Prop) {
-  const { data, deleteTransaction } = useStoreTransaction();
+  const { data, deleteTransaction, updateData } = useStoreTransaction();
   const { handleEditTransaction } = useTransactionContext();
+  const [importedData, setImportedData] = useState([]);
 
   const handleDeleteTransaction = (description: string, id: string) => {
     Alert.alert("Tem certeza que deseja deletar?", `${description}`, [
@@ -88,16 +90,18 @@ export default function HomeScreen({ navigation }: Prop) {
         const fileExtension = file.name.split('.').pop();
 
         if (fileExtension === 'json') {
-          const cacheDirectory = FileSystem.cacheDirectory || FileSystem.documentDirectory; // Use documentDirectory se cacheDirectory não estiver disponível
-          const cacheFilePath = cacheDirectory + 'uploads/' + file.name;
-          await FileSystem.copyAsync({ from: file.uri, to: cacheFilePath });
+          const response = await fetch(file.uri);
+          const fileContent = await response.text();
 
-          const fileContent = await FileSystem.readAsStringAsync(cacheFilePath);
           const importedData = JSON.parse(fileContent);
 
-          // Aqui você pode atualizar o estado ou fazer qualquer outra manipulação dos dados importados
+          // Faça a manipulação dos dados importados aqui
+          updateData(importedData);
 
           console.log(importedData);
+          {
+            console.log('O arquivo selecionado não é legível');
+          }
         } else {
           console.log('Formato de arquivo inválido. Por favor, selecione um arquivo JSON.');
         }
@@ -106,6 +110,7 @@ export default function HomeScreen({ navigation }: Prop) {
       console.log(error);
     }
   };
+
 
 
   return (
@@ -145,7 +150,7 @@ export default function HomeScreen({ navigation }: Prop) {
         </TouchableOpacity>
       </View>
       <SwipeListView
-        data={data}
+        data={importedData.length > 0 ? importedData : data}
         keyExtractor={(_, index) => index.toString()}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={<Card titleList="transferências" />}
