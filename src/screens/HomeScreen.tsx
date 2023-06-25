@@ -4,25 +4,19 @@ import {
   TouchableOpacity,
   SafeAreaView,
   Alert,
-  Button, Platform
+  Platform
 } from "react-native";
 import Card from "../components/Card";
 import { Color } from "../constants/theme";
 import FloatingButton from "../components/FloatingButton";
 import ListItemTransactions from "../components/ListItemTransactions";
-import { backupData, useStoreTransaction } from "../store/store";
+import { useStoreTransaction } from "../store/store";
 import { SwipeListView } from "react-native-swipe-list-view";
-import { AntDesign } from "@expo/vector-icons";
-import { Feather } from "@expo/vector-icons";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, Feather, AntDesign } from "@expo/vector-icons";
 import { useTransactionContext } from "../context/AppContext";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamsList } from "../navigation/Navigation";
-import { shareAsync } from 'expo-sharing';
-import * as FileSystem from 'expo-file-system';
-import * as DocumentPicker from 'expo-document-picker';
-import React, { useEffect, useState } from "react";
-
+import React, { useState } from "react";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamsList,
@@ -48,89 +42,9 @@ export default function HomeScreen({ navigation }: Prop) {
     ]);
   };
 
-  const downloadFromUrl = async () => {
-    const dataAtual = new Date().toLocaleString('pt-br').split("/").join('-').split(' ').join('-');
-    const filename = 'bkp-finance-app-' + dataAtual + '.json';
-    const jsonData = JSON.stringify(data);
-
-    const result = await FileSystem.writeAsStringAsync(
-      FileSystem.documentDirectory + filename,
-      jsonData,
-      {
-        encoding: FileSystem.EncodingType.UTF8,
-      }
-    );
-    console.log(result);
-    save(FileSystem.documentDirectory + filename, filename, "application/json");
-  };
-
-  const save = async (uri: any, filename: any, mimetype: any) => {
-    if (Platform.OS === "android") {
-      const permissions = await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync();
-      if (permissions.granted) {
-        const base64 = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
-        await FileSystem.StorageAccessFramework.createFileAsync(permissions.directoryUri, filename, mimetype)
-          .then(async (uri) => {
-            await FileSystem.writeAsStringAsync(uri, base64, { encoding: FileSystem.EncodingType.Base64 });
-          })
-          .catch(e => console.log(e));
-      } else {
-        shareAsync(uri);
-      }
-    } else {
-      shareAsync(uri);
-    }
-  };
-
-  const importData = async () => {
-    try {
-      const file = await DocumentPicker.getDocumentAsync();
-
-      if (file.type === 'success' && file.uri) {
-        const fileExtension = file.name.split('.').pop();
-
-        if (fileExtension === 'json') {
-          const response = await fetch(file.uri);
-          const fileContent = await response.text();
-
-          const importedData = JSON.parse(fileContent);
-
-          // Faça a manipulação dos dados importados aqui
-          updateData(importedData);
-
-          console.log(importedData);
-          {
-            console.log('O arquivo selecionado não é legível');
-          }
-        } else {
-          console.log('Formato de arquivo inválido. Por favor, selecione um arquivo JSON.');
-        }
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-
-
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.containerHeader}>
-        <TouchableOpacity
-          style={styles.wrapIcon}
-          activeOpacity={0.8}
-          onPress={downloadFromUrl}
-        >
-          <Ionicons name="cloud-upload-outline" size={18} color={Color.icon} />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.wrapIcon}
-          activeOpacity={0.8}
-          onPress={importData}
-        >
-          <Ionicons name="archive-outline" size={18} color={Color.icon} />
-        </TouchableOpacity>
         <TouchableOpacity
           style={styles.wrapIcon}
           activeOpacity={0.8}
@@ -145,7 +59,8 @@ export default function HomeScreen({ navigation }: Prop) {
         >
           <Ionicons name="stats-chart-outline" size={15} color={Color.icon} />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.wrapIcon} activeOpacity={0.8}>
+        <TouchableOpacity style={styles.wrapIcon} activeOpacity={0.8}
+        onPress={() => navigation.navigate("ConfigScreen")}>
           <Ionicons name="settings" size={15} color={Color.icon} />
         </TouchableOpacity>
       </View>

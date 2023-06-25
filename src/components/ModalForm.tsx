@@ -13,7 +13,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import CheckBoxForm from "./CheckBoxForm";
 import { useStoreTransaction } from "../store/store";
-import { currentMonth, formattedDate, getCurrentTimestamp } from "../helpers";
+import { currentMonth, getCurrentTimestamp } from "../helpers";
 import { useTransactionContext } from "../context/AppContext";
 import { useValidate } from "../helpers/validateForm";
 import RNDateTimePicker from '@react-native-community/datetimepicker';
@@ -31,11 +31,9 @@ export default function ModalForm() {
     date: "",
   });
 
-  //para validar que solo se envie un numero
-  const moneyValue = inputValue.money.replace(/[^0-9]/g, "");
+  const moneyValue = inputValue.money.replace(/[^0-9.]/g, "");
 
   const errors = useValidate(inputValue, checkSelected);
-
   const handleChange = (valueName: string, textValue: string) => {
     setInputValue({ ...inputValue, [valueName]: textValue });
   };
@@ -44,7 +42,7 @@ export default function ModalForm() {
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
   const handleDateChange = (date: any) => {
-    setIsDatePickerOpen(false);
+    closeDatePicker();
     setSelectedDate(date);
   };
 
@@ -66,14 +64,14 @@ export default function ModalForm() {
       setCheckSelected(objectToEdit.transactionType);
     }
     if (!modalVisible) {
-      setInputValue({ money: "", description: "", date: ""});
+      setInputValue({ money: "", description: "", date: "" });
       setCheckSelected("");
       setSent(false);
     }
   }, [modalVisible, selectedDate]);
 
   const handleSubmit = () => {
-    setSent(true); //para mostrar el error en la pantalla
+    setSent(true);
 
     if (
       !inputValue.description ||
@@ -83,14 +81,12 @@ export default function ModalForm() {
     )
       return;
 
-      const dateTime = DateTime.fromJSDate(selectedDate);
-      const formattedDate2 = dateTime.setLocale("pt-BR").toFormat("cccc, d LLL y");
+    const dateTime = DateTime.fromJSDate(selectedDate);
+    const formattedDate2 = dateTime.setLocale("pt-BR").toFormat("cccc, d LLL y");
     if (objectToEdit !== null) {
-      
-      //si hay un objeto para editar, edito el item.
+
       updateTransaction({ ...inputValue, date: formattedDate2 }, itemId, checkSelected);
     } else {
-      //sino agrego un item nuevo
       addTransaction(
         { ...inputValue, date: selectedDate.toLocaleDateString('pt-BR') },
         checkSelected,
@@ -151,12 +147,10 @@ export default function ModalForm() {
                 </TouchableOpacity>
                 {isDatePickerOpen && (
                   <RNDateTimePicker
-                    mode="datetime"
+                    mode="date"
                     value={selectedDate || new Date()}
                     onChange={(event, date: any) => {
                       handleDateChange(date);
-                      closeDatePicker();
-                        
                     }}
                   />
                 )}

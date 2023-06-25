@@ -15,7 +15,8 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.fpsjunior.controldegastos"
     },
     "android": {
       "permissions": [
@@ -25,10 +26,18 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.fpsjunior.controldegastos",
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "99d915f2-b7d0-4cef-9ff3-8eeb60d5d2d7"
+      }
+    },
+    "owner": "fpsjunior"
   }
 }
