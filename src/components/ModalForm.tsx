@@ -30,16 +30,39 @@ export default function ModalForm() {
     description: "",
     date: "",
   });
-
   const moneyValue = inputValue.money.replace(/[^0-9.]/g, "");
-
   const errors = useValidate(inputValue, checkSelected);
   const handleChange = (valueName: string, textValue: string) => {
     setInputValue({ ...inputValue, [valueName]: textValue });
   };
-
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [selectedTab, setSelectedTab] = useState("Income");
+
+
+  const tabs = [
+    {
+      name: "Entrada",
+      type: "Income",
+    },
+    {
+      name: "Saída",
+      type: "Expenses",
+    },
+  ];
+
+  const handleRestaurarTabPress = (event: any) => {
+    // Função para a tab "Restaurar"
+    if (event === "Income") {
+      setSelectedTab("Income")
+      setCheckSelected("Income");
+      console.log(event)
+    } else {
+      setSelectedTab("Expenses")
+      setCheckSelected("Expenses");
+      console.log(event)
+    }
+  };
 
   const handleDateChange = (date: any) => {
     closeDatePicker();
@@ -102,6 +125,7 @@ export default function ModalForm() {
   };
 
   const handleCheckBox = (value: string) => {
+    console.log(value)
     setCheckSelected(value);
   };
 
@@ -179,13 +203,51 @@ export default function ModalForm() {
                   </Text>
                 )}
               </View>
-              <View>
+              {/* <View>
                 <CheckBoxForm
                   handleCheckBox={handleCheckBox}
                   checkSelected={checkSelected}
                 />
                 {sent && <Text style={styles.errorCheck}>{errors.check}</Text>}
-              </View>
+              </View> */}
+                <View style={styles.containerTab}>
+                  {tabs.map((item) => {
+                    return (
+                      <LinearGradient
+                        key={item.name}
+                        start={{ x: 0.1, y: 0 }}
+                        end={{ x: 1, y: 1.2 }}
+                        colors={[
+                          item.type === selectedTab ? "#4f80c3" : "#fff",
+                          item.type === selectedTab ? "#c661eb" : "#fff",
+                          item.type === selectedTab ? "#ee8183" : "#fff",
+                        ]}
+                        style={styles.tabGradient}
+                      >
+                        <TouchableOpacity
+                          activeOpacity={1}
+                          style={styles.wrapTab}
+                          onPress={() => handleRestaurarTabPress(item.type)}
+                        >
+                          <Text
+                            style={[
+                              styles.titleTab,
+                              {
+                                color:
+                                  item.type === selectedTab
+                                    ? "#fff"
+                                    : Color.fontColorPrimary,
+                              },
+                            ]}
+                          >
+                            {item.name}
+                          </Text>
+                        </TouchableOpacity>
+                      </LinearGradient>
+                    );
+                  })}
+                </View>
+                {sent && <Text style={styles.errorCheck}>{errors.check}</Text>}
             </View>
             <TouchableOpacity activeOpacity={0.8} onPress={handleSubmit}>
               <LinearGradient
@@ -205,6 +267,32 @@ export default function ModalForm() {
 }
 
 const styles = StyleSheet.create({
+  wrapTab: {
+    flex: 1,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  tabGradient: {
+    flex: 1,
+    borderRadius: 10,
+    margin: 3,
+  },
+  titleTab: {
+    fontWeight: "bold",
+    letterSpacing: 0.4,
+    fontSize: 13,
+    lineHeight: 15,
+  },
+  containerTab: {
+    backgroundColor: "#fff",
+    marginTop: 20,
+    marginHorizontal: 24,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    height: 50,
+    borderRadius: 10,
+  },
   container: {
     flex: 1,
     backgroundColor: Color.primary,
