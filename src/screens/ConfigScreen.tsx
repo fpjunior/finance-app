@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -17,10 +17,11 @@ import Card from "../components/Card";
 import { useTransactionContext } from "../context/AppContext";
 import { useStoreTransaction } from "../store/store";
 
-
 import { shareAsync } from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
 import * as DocumentPicker from 'expo-document-picker';
+import { dbBackup, saveDataBackup } from "../store/storeBackup";
+import CardBackup from '../components/CardBackup';
 
 
 type TransactionsScreenProp = NativeStackNavigationProp<
@@ -31,6 +32,12 @@ type TransactionsScreenProp = NativeStackNavigationProp<
 type Prop = {
   navigation: TransactionsScreenProp;
 };
+
+interface BackupData {
+  dataSalvo: string;
+  nomeArquivo: string;
+  quantidadeRegistros: number;
+}
 
 const tabs = [
   {
@@ -46,6 +53,7 @@ const tabs = [
 export default function TransactionsScreen({ navigation }: Prop) {
   const [selectedTab, setSelectedTab] = useState("Salvar");
   const { data, updateData } = useStoreTransaction();
+  const [backupData, setBackupData] = useState<BackupData | null>(null);
   
   const handleRestaurarTabPress = (event: any) => {
     // Função para a tab "Restaurar"
@@ -60,20 +68,45 @@ export default function TransactionsScreen({ navigation }: Prop) {
     }
   };
 
+  useEffect(() => {
+  
+    // Realiza a consulta na tabela 'backup' para buscar os dados
+    dbBackup.transaction((tx) => {
+      tx.executeSql(
+        'SELECT * FROM backup',
+        [],
+        (_, resultSet) => {
+          const { rows } = resultSet;
+          if (rows.length > 0) {
+            const { dataSalvo, nomeArquivo, quantidadeRegistros } = rows.item(0);
+            setBackupData({ dataSalvo, nomeArquivo, quantidadeRegistros });
+          }
+        },
+        (_, error) => {
+          console.log('Erro ao buscar dados de backup:', error);
+          return false; // Return false to satisfy the expected boolean return type
+        }
+      );
+    });
+  }, []);
+
   const downloadFromUrl = async () => {
-    const dataAtual = new Date().toLocaleString('pt-br').split("/").join('-').split(' ').join('-');
-    const filename = 'bkp-finance-app-' + dataAtual + '.json';
+    const dataSalvo = new Date().toLocaleString('pt-br').split("/").join('-').split(' ').join('-');
+    const nomeArquivo = 'bkp-finance-app-' + dataSalvo + '.json';
     const jsonData = JSON.stringify(data);
+    const quantidadeRegistros = data.length
 
     const result = await FileSystem.writeAsStringAsync(
-      FileSystem.documentDirectory + filename,
+      FileSystem.documentDirectory + nomeArquivo,
       jsonData,
       {
         encoding: FileSystem.EncodingType.UTF8,
       }
     );
     console.log(result);
-    save(FileSystem.documentDirectory + filename, filename, "application/json");
+    saveDataBackup(dataSalvo, nomeArquivo, data.length);
+    setBackupData({ dataSalvo, nomeArquivo, quantidadeRegistros }),
+    save(FileSystem.documentDirectory + nomeArquivo, nomeArquivo, "application/json");
   };
 
   const save = async (uri: any, filename: any, mimetype: any) => {
@@ -150,6 +183,7 @@ export default function TransactionsScreen({ navigation }: Prop) {
       </View>
       <ScrollView showsVerticalScrollIndicator={false}>
         <Card/>
+        <CardBackup cardObj={backupData}/>
         <View style={styles.containerTab}>
           {tabs.map((item) => {
             return (
@@ -187,11 +221,6 @@ export default function TransactionsScreen({ navigation }: Prop) {
             );
           })}
         </View>
-        {/* {selectedTab === "Salvar" ? (
-          <IncomeListTransactions />
-        ) : (
-          <ExpensesListTransactions />
-        )} */}
       </ScrollView>
     </SafeAreaView>
   );
