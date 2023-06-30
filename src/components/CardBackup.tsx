@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { AntDesign } from "@expo/vector-icons";
+import { AntDesign, Ionicons } from "@expo/vector-icons";
 import { Color } from "../constants/theme";
 import { formatQuantity } from "../helpers";
 import { useTransactionContext } from "../context/AppContext";
@@ -15,13 +15,20 @@ type Prop = {
 export default function CardBackup({ titleList, cardObj }: Prop) {
   const { data } = useStoreTransaction();
   const { totalIncome, totalExpenses, total } = useTransactionContext();
-  const { dataSalvo, nomeArquivo, quantidadeRegistros } = cardObj || {};
+  const { dataSalvo, nomeArquivo, quantidadeRegistros, isBackup, rangeDateBackup } = cardObj || {};
+  const { dataRestore, nomeArquivoRestore, quantidadeRegistrosRestore, isRestore, rangeDateRestore } = cardObj || {};
 
   let indiceComa = data[0]?.date.indexOf(",");
   let newDate = data[0]?.date.substring(indiceComa + 1);
 
   let indiceComa2 = data[data.length - 1]?.date.indexOf(",");
   let newDate2 = data[data.length - 1]?.date.substring(indiceComa2 + 1);
+
+  let indiceComaRestore = data[0]?.date.indexOf(",");
+  let newDateRestore = data[0]?.date.substring(indiceComa + 1);
+
+  let indiceComaRestore2 = data[data.length - 1]?.date.indexOf(",");
+  let newDateRestore2 = data[data.length - 1]?.date.substring(indiceComa2 + 1);
 
   return (
     <>
@@ -31,25 +38,44 @@ export default function CardBackup({ titleList, cardObj }: Prop) {
         colors={["#4f80c3", "#c661eb", "#ee8183"]}
         style={styles.container}
       >
-        <Text style={styles.dataEmpty}>Informações do último backup</Text>
+        <Text style={styles.dataEmpty}>
+          {isBackup == 1 ? 'Informações do último backup realizado' : 'Informações do último restore realizado'}
+        </Text>
         {data.length > 0 ? (
           <Text style={styles.dates}>
-           Dados de {newDate2} a {newDate}
+            Registros {isBackup == 1 ? rangeDateBackup : rangeDateRestore}
           </Text>
         ) : (
-          <Text style={styles.dataEmpty}>Não tem nenhuma movimentação</Text>
-          
-          )}
-        {/* <Text style={styles.total}>{formatQuantity(total)}</Text> */}
+          <Text style={styles.dates}> Registros {rangeDateRestore}</Text>
+        )}
         <View style={styles.containerFooter}>
           <View style={styles.wrapContentLeftEndRight}>
             <View style={[styles.wrapArrow]}>
-              <AntDesign name="arrowup" size={15} color={Color.income} />
+              {
+              isBackup == 1 
+              ? <Ionicons name="cloud-upload" size={35} color={Color.icon} /> 
+              : <Ionicons name="cloud-download" size={35} color={Color.icon} />
+              }
             </View>
             <View>
-              <Text style={styles.title}>Nome do arquivo salvo: {nomeArquivo}</Text>
-              <Text style={styles.title}>Quantidade de registros: {quantidadeRegistros}</Text>
-              <Text style={styles.money}>Data do backup: {dataSalvo}</Text>
+              {
+                isBackup == 1
+                  ? <Text style={styles.title}>Nome do arquivo salvo: {nomeArquivo}</Text>
+                  : <Text style={styles.title}>Nome do arquivo restaurado: {nomeArquivoRestore}</Text>
+              }
+
+              {
+                isBackup == 1
+                  ? <Text style={styles.title}>Quantidade de registros: {quantidadeRegistros}</Text>
+                  : <Text style={styles.title}>Quantidade de registros: {quantidadeRegistrosRestore}</Text>
+              }
+
+              {
+                isBackup == 1
+                  ? <Text style={styles.money}>Data do backup: {dataSalvo}</Text>
+                  : <Text style={styles.money}>Data da Restauração: {dataRestore}</Text>
+              }
+
             </View>
           </View>
         </View>
@@ -101,12 +127,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   wrapArrow: {
-    width: 26,
-    height: 26,
+    width: 40,
+    height: 40,
     backgroundColor: "rgba(255,255,255,0.4)",
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 26 / 2,
+    borderRadius: 26 / 1,
     marginRight: 14,
   },
   title: {

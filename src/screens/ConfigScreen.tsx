@@ -20,7 +20,7 @@ import { useStoreTransaction } from "../store/store";
 import { shareAsync } from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
 import * as DocumentPicker from 'expo-document-picker';
-import { dbBackup, saveDataBackup } from "../store/storeBackup";
+import { dbBackup, restoreDataBackup, saveDataBackup } from "../store/storeBackup";
 import CardBackup from '../components/CardBackup';
 
 
@@ -37,6 +37,18 @@ interface BackupData {
   dataSalvo: string;
   nomeArquivo: string;
   quantidadeRegistros: number;
+  isBackup?: number;
+  rangeDateBackup: string;
+  pathBackup: string;
+}
+
+interface RestoreData {
+  dataRestore: string;
+  nomeArquivoRestore: string;
+  quantidadeRegistrosRestore: number;
+  isBackup?: number;
+  rangeDateRestore: string;
+  pathRestore: string;
 }
 
 const tabs = [
@@ -54,10 +66,13 @@ export default function TransactionsScreen({ navigation }: Prop) {
   const [selectedTab, setSelectedTab] = useState("Salvar");
   const { data, updateData } = useStoreTransaction();
   const [backupData, setBackupData] = useState<BackupData | null>(null);
-  
+  const [restoreData, setRestoreData] = useState<RestoreData | null>(null);
+  const [pathBackup, setPathBackup] = useState('')
+  const [pathRestore, setPathRestore] = useState('')
+
   const handleRestaurarTabPress = (event: any) => {
     // Função para a tab "Restaurar"
-    if(event === "Restaurar") {
+    if (event === "Restaurar") {
       setSelectedTab("Restaurar")
       importData()
       console.log(event)
@@ -69,7 +84,6 @@ export default function TransactionsScreen({ navigation }: Prop) {
   };
 
   useEffect(() => {
-  
     // Realiza a consulta na tabela 'backup' para buscar os dados
     dbBackup.transaction((tx) => {
       tx.executeSql(
@@ -78,12 +92,30 @@ export default function TransactionsScreen({ navigation }: Prop) {
         (_, resultSet) => {
           const { rows } = resultSet;
           if (rows.length > 0) {
-            const { dataSalvo, nomeArquivo, quantidadeRegistros } = rows.item(0);
-            setBackupData({ dataSalvo, nomeArquivo, quantidadeRegistros });
+            const { dataSalvo, nomeArquivo, quantidadeRegistros, isBackup, rangeDateBackup, pathBackup } = rows.item(0);
+            setBackupData({ dataSalvo, nomeArquivo, quantidadeRegistros, isBackup, rangeDateBackup, pathBackup });
           }
         },
         (_, error) => {
           console.log('Erro ao buscar dados de backup:', error);
+          return false; // Return false to satisfy the expected boolean return type
+        }
+      );
+    });
+
+    dbBackup.transaction((tx) => {
+      tx.executeSql(
+        'SELECT * FROM restore',
+        [],
+        (_, resultSet) => {
+          const { rows } = resultSet;
+          if (rows.length > 0) {
+            const { dataRestore, nomeArquivoRestore, quantidadeRegistrosRestore, isBackup, rangeDateRestore, pathRestore } = rows.item(0);
+            setRestoreData({ dataRestore, nomeArquivoRestore, quantidadeRegistrosRestore, isBackup, rangeDateRestore, pathRestore });
+          }
+        },
+        (_, error) => {
+          console.log('Erro ao buscar dados do restore:', error);
           return false; // Return false to satisfy the expected boolean return type
         }
       );
@@ -95,6 +127,11 @@ export default function TransactionsScreen({ navigation }: Prop) {
     const nomeArquivo = 'bkp-finance-app-' + dataSalvo + '.json';
     const jsonData = JSON.stringify(data);
     const quantidadeRegistros = data.length
+    const indiceComaBackup = data[0]?.date.indexOf(",");
+    const newDateBackup = data[0]?.date.substring(indiceComaBackup + 1);
+    const indiceComaBackup2 = data[data.length - 1]?.date.indexOf(",");
+    const newDateBackup2 = data[data.length - 1]?.date.substring(indiceComaBackup2 + 1);
+    const rangeDateBackup = `De${newDateBackup2} a ${newDateBackup}`
 
     const result = await FileSystem.writeAsStringAsync(
       FileSystem.documentDirectory + nomeArquivo,
@@ -104,9 +141,9 @@ export default function TransactionsScreen({ navigation }: Prop) {
       }
     );
     console.log(result);
-    saveDataBackup(dataSalvo, nomeArquivo, data.length);
-    setBackupData({ dataSalvo, nomeArquivo, quantidadeRegistros }),
-    save(FileSystem.documentDirectory + nomeArquivo, nomeArquivo, "application/json");
+    saveDataBackup(dataSalvo, nomeArquivo, quantidadeRegistros, 1, rangeDateBackup, pathBackup);
+    setBackupData({ dataSalvo, nomeArquivo, quantidadeRegistros, isBackup: 1, rangeDateBackup, pathBackup }),
+      save(FileSystem.documentDirectory + nomeArquivo, nomeArquivo, "application/json");
   };
 
   const save = async (uri: any, filename: any, mimetype: any) => {
@@ -116,6 +153,10 @@ export default function TransactionsScreen({ navigation }: Prop) {
         const base64 = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
         await FileSystem.StorageAccessFramework.createFileAsync(permissions.directoryUri, filename, mimetype)
           .then(async (uri) => {
+            const lastSlashIndex = uri.lastIndexOf("%2F");
+            const dotJsonIndex = uri.lastIndexOf(".json");
+            const extractedValue = uri.substring(lastSlashIndex + 3, dotJsonIndex);
+            setPathBackup(extractedValue)
             await FileSystem.writeAsStringAsync(uri, base64, { encoding: FileSystem.EncodingType.Base64 });
           })
           .catch(e => console.log(e));
@@ -131,18 +172,27 @@ export default function TransactionsScreen({ navigation }: Prop) {
     try {
       const file = await DocumentPicker.getDocumentAsync();
 
+
       if (file.type === 'success' && file.uri) {
         const fileExtension = file.name.split('.').pop();
 
         if (fileExtension === 'json') {
+          const dataRestore = new Date().toLocaleString('pt-br').split("/").join('-').split(' ').join('-');
           const response = await fetch(file.uri);
           const fileContent = await response.text();
-
+          const nomeArquivoRestore = file.name
           const importedData = JSON.parse(fileContent);
+          const quantidadeRegistrosRestore = importedData.length
+          const indiceComaRestore = importedData[0]?.date.indexOf(",");
+          const newDateRestore = importedData[0]?.date.substring(indiceComaRestore + 1);
+          const indiceComaRestore2 = importedData[importedData.length - 1]?.date.indexOf(",");
+          const newDateRestore2 = importedData[importedData.length - 1]?.date.substring(indiceComaRestore2 + 1);
+          const rangeDateRestore = `De${newDateRestore2} a ${newDateRestore}`
 
           updateData(importedData);
-
-          console.log(importedData);
+          restoreDataBackup(dataRestore, nomeArquivoRestore, quantidadeRegistrosRestore, 0, rangeDateRestore, pathBackup);
+          setRestoreData({ dataRestore, nomeArquivoRestore, quantidadeRegistrosRestore, isBackup: 0, rangeDateRestore, pathRestore }),
+            console.log(importedData);
           {
             console.log('O arquivo selecionado não é legível');
           }
@@ -182,8 +232,9 @@ export default function TransactionsScreen({ navigation }: Prop) {
         </View>
       </View>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <Card/>
-        <CardBackup cardObj={backupData}/>
+        {/* <Card/> */}
+        <CardBackup cardObj={restoreData} />
+        <CardBackup cardObj={backupData} />
         <View style={styles.containerTab}>
           {tabs.map((item) => {
             return (
