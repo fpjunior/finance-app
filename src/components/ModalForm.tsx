@@ -21,7 +21,7 @@ import { DateTime } from "luxon";
 
 export default function ModalForm() {
   const [sent, setSent] = useState(false);
-  const { addTransaction, updateTransaction } = useStoreTransaction();
+  const { addTransaction, updateTransaction, deleteAllTransactions } = useStoreTransaction();
   const { itemId, objectToEdit, modalVisible, closeModal } =
     useTransactionContext();
   const [checkSelected, setCheckSelected] = useState("");
@@ -108,10 +108,10 @@ export default function ModalForm() {
     const formattedDate2 = dateTime.setLocale("pt-BR").toFormat("cccc, d LLL y");
     if (objectToEdit !== null) {
 
-      updateTransaction({ ...inputValue, date: formattedDate2 }, itemId, checkSelected);
+      updateTransaction({ ...inputValue, date: new Date(selectedDate).toISOString() }, itemId, checkSelected);
     } else {
       addTransaction(
-        { ...inputValue, date: selectedDate.toLocaleDateString('pt-BR') },
+        { ...inputValue, date: new Date(selectedDate).toISOString() },
         checkSelected,
         getCurrentTimestamp(),
         formattedDate2,

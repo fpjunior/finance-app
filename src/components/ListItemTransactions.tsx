@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from "react-native";
 import { Color } from "../constants/theme";
 import { Transaction } from "../interface/interfaceTransaction";
 import { formatQuantity } from "../helpers";
+import { DateTime } from "luxon";
 
 type Prop = {
   item: Transaction;
@@ -10,6 +11,10 @@ type Prop = {
 
 export default function ListItemTransactions({ item }: Prop) {
   const { description, money, transactionType, date } = item;
+  // const dateTime = DateTime.fromJSDate(new Date(item.date));
+  // item.date = dateTime.setLocale("pt-BR").toFormat("cccc, d LLL y");
+
+  // const expensesForMonth = item.date === new Date().toISOString();
 
   return (
     <View style={styles.container}>
