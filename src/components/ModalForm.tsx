@@ -21,7 +21,7 @@ import { DateTime } from "luxon";
 
 export default function ModalForm() {
   const [sent, setSent] = useState(false);
-  const { addTransaction, updateTransaction, deleteAllTransactions } = useStoreTransaction();
+  const { addTransaction, updateTransaction } = useStoreTransaction();
   const { itemId, objectToEdit, modalVisible, closeModal } =
     useTransactionContext();
   const [checkSelected, setCheckSelected] = useState("");

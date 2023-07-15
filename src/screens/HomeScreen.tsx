@@ -4,13 +4,14 @@ import {
   TouchableOpacity,
   SafeAreaView,
   Alert,
-  Text
+  Text,
+  RefreshControl
 } from "react-native";
 import Card from "../components/Card";
 import { Color } from "../constants/theme";
 import FloatingButton from "../components/FloatingButton";
 import ListItemTransactions from "../components/ListItemTransactions";
-import { db, useStoreTransaction } from "../store/store";
+import { useStoreTransaction } from "../store/store";
 import { SwipeListView } from "react-native-swipe-list-view";
 import { Ionicons, Feather, AntDesign } from "@expo/vector-icons";
 import { useTransactionContext } from "../context/AppContext";
@@ -18,7 +19,8 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamsList } from "../navigation/Navigation";
 import React, { useState, useEffect } from "react";
 import { Transaction } from "../interface/interfaceTransaction";
-import * as SQLite from 'expo-sqlite';
+import { showToast, showToastWithGravity } from "../components/Toast";
+// import { RefreshControl } from "react-native-gesture-handler";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamsList,
@@ -27,19 +29,21 @@ type HomeScreenNavigationProp = NativeStackNavigationProp<
 
 type Prop = {
   navigation: HomeScreenNavigationProp;
-  atualizarOriginalData: Transaction[];
 };
 
-export default function HomeScreen({ navigation, atualizarOriginalData }: Prop) {
-  const { data, deleteTransaction, updateData, deleteAllTransactions } = useStoreTransaction();
+export default function HomeScreen({ navigation }: Prop) {
+  const { data, deleteTransaction, updateData } = useStoreTransaction();
   const { handleEditTransaction } = useTransactionContext();
-  const [importedData, setImportedData] = useState<Transaction[]>([])
-  const [originalData, setOriginalData] = useState<Transaction[]>([])
-  // const db = SQLite.openDatabase("mydatabase.db");
+  const [importedData, setImportedData] = useState([]);
+  const [totalRecord, setTotalRecord] = useState(0);
+  const [hasFilter, setHasfilter] = useState(false);
+  const [filteredData, setFilteredData] = useState<Transaction[]>([]); // Estado para armazenar os dados filtrados
+  const [originalData, setOriginalData] = useState<Transaction[]>([]); 
+  const [refreshing, setRefreshing] = useState(false)
 
 
   const handleDeleteTransaction = (description: string, id: string) => {
-    Alert.alert("Tem certeza que deseja deletar2?", `${description}`, [
+    Alert.alert("Tem certeza que deseja deletar?", `${description}`, [
       {
         text: "Cancelar",
         style: "cancel",
@@ -49,53 +53,11 @@ export default function HomeScreen({ navigation, atualizarOriginalData }: Prop) 
   };
 
   useEffect(() => {
-    // deleteAllTransactions()
-    selectAllRecord()
+    updateData(data)
+    setOriginalData(data);
+    setFilteredData(data);
   }, []);
 
-  const selectAllRecord = () => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        "SELECT * FROM transactions",
-        [],
-        (_, { rows }) => {
-          const data: Transaction[] = [];
-
-          for (let i = 0; i < rows.length; i++) {
-            const item = rows.item(i);
-            data.push({
-              id: item.id,
-              money: item.money,
-              description: item.description,
-              date: item.date,
-              transactionType: item.transactionType,
-              currentMonth: item.currentMonth,
-            });
-          }
-          setOriginalData(data)
-          updateData(data);
-        },
-        (_, error) => {
-          console.log("Error retrieving transactions:", error);
-          return false
-        }
-      );
-    });
-  }
-
-  const filterByExpenses = () => {
-    const d = data.filter((e: any) => {
-      return e.transactionType === 'Expenses'
-    })
-    updateData(d)
-  }
-
-  const filterByIncome = () => {
-    const d = data.filter((e: any) => {
-      return e.transactionType === 'Income'
-    })
-    updateData(d)
-  }
 
   const convertDate = (dataString: any, action: string) => {
     var diasSemana = {
@@ -123,19 +85,39 @@ export default function HomeScreen({ navigation, atualizarOriginalData }: Prop) 
       "dez.": 11
     };
 
-    var partesData = dataString.split(" ");
-    var diaSemana = partesData[0];
-    var dia = parseInt(partesData[1]);
-    var mes = meses[partesData[2]?.toLowerCase()];
-    var ano = parseInt(partesData[3]);
+    const partesData = dataString.split(" ");
+    const diaSemana = partesData[0];
+    const dia = parseInt(partesData[1]);
+    const mes = meses[partesData[2]?.toLowerCase()];
+    const ano = parseInt(partesData[3]);
 
-    var data = new Date(ano, mes, dia);
+    const data = new Date(ano, mes, dia);
     if (action == 'mes') {
       return mes;
     } if (action == 'data') {
       return data
     }
   }
+
+  const filterByExpenses = () => {
+    const filteredExpenses = originalData.filter((e: Transaction) => e.transactionType === 'Expenses');
+    setFilteredData(filteredExpenses);
+    setHasfilter(true)
+    showToastWithGravity('Mostrando todas as receitas')
+  };
+
+  const filterByIncomes = () => {
+    const filteredIncomes = originalData.filter((e: Transaction) => e.transactionType === 'Income');
+    setFilteredData(filteredIncomes);
+    setHasfilter(true)
+    showToastWithGravity('Mostrando todas as despesas')
+  };
+
+  const resetFilter = () => {
+    setFilteredData(originalData);
+    setHasfilter(false)
+    showToastWithGravity('Mostrando todos os registros')
+  };
 
   const getWeekNumber = (dateString: any) => {
     const date = new Date(dateString);
@@ -152,16 +134,21 @@ export default function HomeScreen({ navigation, atualizarOriginalData }: Prop) 
       return semanaRegistro === semanaAtual;
     });
     updateData(filterData)
+    setHasfilter(true)
+    showToastWithGravity('Mostrando registros da semana atual')
   }
 
   const filterByMonth = () => {
     const mesAtual = new Date().getMonth(); // O valor retornado varia de 0 a 11 (0 para janeiro, 1 para fevereiro, etc.)
-    const filterData = originalData.filter((e: any) => {
+    const filterData = originalData.filter((e: Transaction) => {
       const mesRegistro = convertDate(e.date, 'mes');
 
       return mesRegistro === mesAtual;
     })
-    updateData(filterData)
+    setFilteredData(filterData)
+    setHasfilter(true)
+    showToastWithGravity('Mostrando registros do mês atual')
+
   }
 
   const dia = () => {
@@ -171,36 +158,56 @@ export default function HomeScreen({ navigation, atualizarOriginalData }: Prop) 
       return dataRegistro.toString().split(' ').slice(0, 4).join(' ') === dataAtual.toString().split(' ').slice(0, 4).join(' ');
     })
     updateData(filterData)
+    setHasfilter(true)
+
   }
 
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+
+    try {
+      await updateData(data);
+      showToast('Lista Atualizada');
+    } catch (error) {
+      console.log('Erro ao atualizar os dados:', error);
+    }
+
+    setRefreshing(false);
+  };
+  
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.containerHeader}>
-        <TouchableOpacity
-          style={styles.mes}
-          activeOpacity={0.8}
-          onPress={() => dia()}
-        >
-          <Text>Dia</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.mes}
-          activeOpacity={0.8}
-          onPress={() => filterByWeek()}
-        >
-          <Text>Semanal</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+
+      <TouchableOpacity
           style={styles.mes}
           activeOpacity={0.8}
           onPress={() => filterByMonth()}
         >
-          <Text>Mensal</Text>
+          <Text>Mês</Text>
         </TouchableOpacity>
+
+      <TouchableOpacity
+          style={styles.mes}
+          activeOpacity={0.8}
+          onPress={() => filterByExpenses()}
+        >
+          <Text>Despesas</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity
           style={styles.mes}
           activeOpacity={0.8}
-          onPress={() => updateData(originalData)}
+          onPress={() => filterByIncomes()}
+        >
+          <Text>Receitas</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.mes}
+          activeOpacity={0.8}
+          onPress={() => resetFilter()}
         >
           <Text>Todos</Text>
         </TouchableOpacity>
@@ -219,18 +226,19 @@ export default function HomeScreen({ navigation, atualizarOriginalData }: Prop) 
           <Ionicons name="stats-chart-outline" size={15} color={Color.icon} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.wrapIcon} activeOpacity={0.8}
-          onPress={() => navigation.navigate("ConfigScreen")}>
+        onPress={() => navigation.navigate("ConfigScreen")}>
           <Ionicons name="settings" size={15} color={Color.icon} />
         </TouchableOpacity>
       </View>
+
       <SwipeListView
-        data={importedData.length > 0 ? importedData : data}
+        data={data.length > 0 || hasFilter ? filteredData : originalData}
         keyExtractor={(_, index) => index.toString()}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={<Card titleList="transferências" />}
         contentContainerStyle={{ paddingBottom: 90 }}
         renderItem={({ item }) => {
-          return <ListItemTransactions item={item} />;
+          return <ListItemTransactions item={item} />
         }}
         renderHiddenItem={({ item }) => {
           return (
@@ -254,8 +262,13 @@ export default function HomeScreen({ navigation, atualizarOriginalData }: Prop) 
             </View>
           );
         }}
+        windowSize={11}
+
         rightOpenValue={-120}
         disableRightSwipe
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
       />
       <FloatingButton />
     </SafeAreaView>
@@ -284,15 +297,6 @@ const styles = StyleSheet.create({
     borderRadius: 7,
     elevation: 12,
   },
-  mes: {
-    backgroundColor: "#b3b3b33b",
-    height: 30,
-    width: 60,
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 7,
-    elevation: 12,
-  },
   hiddenItem: {
     flexDirection: "row",
     justifyContent: "flex-end",
@@ -309,5 +313,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     elevation: 2,
+  },
+  mes: {
+    backgroundColor: "#b3b3b33b",
+    height: 30,
+    width: 60,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 7,
+    elevation: 12,
   },
 });

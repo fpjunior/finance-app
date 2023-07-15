@@ -13,14 +13,15 @@ import { Color } from "../constants/theme";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamsList } from "../navigation/Navigation";
 import { LinearGradient } from "expo-linear-gradient";
-import { db, updateData2, useStoreTransaction } from "../store/store";
+import Card from "../components/Card";
+import { useTransactionContext } from "../context/AppContext";
+import { useStoreTransaction } from "../store/store";
 
 import { shareAsync } from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
 import * as DocumentPicker from 'expo-document-picker';
 import { dbBackup, restoreDataBackup, saveDataBackup } from "../store/storeBackup";
 import CardBackup from '../components/CardBackup';
-import HomeScreen from "./HomeScreen";
 
 
 type TransactionsScreenProp = NativeStackNavigationProp<
@@ -63,78 +64,11 @@ const tabs = [
 
 export default function TransactionsScreen({ navigation }: Prop) {
   const [selectedTab, setSelectedTab] = useState("Salvar");
-  const { data, updateData, deleteAllTransactions } = useStoreTransaction();
+  const { data, updateData } = useStoreTransaction();
   const [backupData, setBackupData] = useState<BackupData | null>(null);
   const [restoreData, setRestoreData] = useState<RestoreData | null>(null);
-  const [pathBackup, setPathBackup] = useState('');
-  const [pathRestore, setPathRestore] = useState('');
-
-  const addTransactions = (transactions: Array<any>) => {
-  
-    deleteAllTransactions()
-
-    db.transaction((tx) => {
-      transactions.forEach((transaction) => {
-        tx.executeSql(
-          "INSERT INTO transactions (money, description, date, transactionType, id, currentMonth) VALUES (?, ?, ?, ?, ?, ?)",
-          [
-            transaction.money,
-            transaction.description,
-            transaction.date,
-            transaction.transactionType,
-            transaction.id,
-            transaction.currentMonth,
-          ],
-          (_, { rowsAffected }) => {
-            if (rowsAffected > 0) {
-              console.log("Registro salvo com sucesso");
-            }
-          },
-          (_, error) => {
-            console.log("Erro ao inserir transação:", error);
-            return false;
-          }
-        );
-      });
-    });
-
-      db.transaction((tx) => {
-        tx.executeSql(
-          "SELECT * FROM transactions",
-          [],
-          (_, resultSet) => {
-            const { rows } = resultSet;
-            const data: any = [];
-            for (let i = 0; i < rows.length; i++) {
-              const {
-                money,
-                description,
-                date,
-                transactionType,
-                id,
-                currentMonth,
-              } = rows.item(i);
-              data.push({
-                money,
-                description,
-                date,
-                transactionType,
-                id,
-                currentMonth,
-              });
-              updateData(data)
-            }
-            console.log("Dados atualizados");
-           return data
-          },
-          (_, error) => {
-            console.log("Erro ao buscar dados:", error);
-            return false
-          }
-        );
-      });
-
-  }
+  const [pathBackup, setPathBackup] = useState('')
+  const [pathRestore, setPathRestore] = useState('')
 
   const handleRestaurarTabPress = (event: any) => {
     // Função para a tab "Restaurar"
@@ -234,43 +168,11 @@ export default function TransactionsScreen({ navigation }: Prop) {
     }
   };
 
-  
-  // const transformArray = (array: any) => {
-  //   return array.map((obj: any) => {
-  //     const { id, ...rest } = obj; // Remover a propriedade "id"
-  //     return rest; // Retornar o objeto sem a propriedade "id"
-  //   });
-  // };
-
-  function convertDataFormat(data: string): string {
-    const months: { [key: string]: string } = {
-      "jan.": "01",
-      "fev.": "02",
-      "mar.": "03",
-      "abr.": "04",
-      "mai.": "05",
-      "jun.": "06",
-      "jul.": "07",
-      "ago.": "08",
-      "set.": "09",
-      "out.": "10",
-      "nov.": "11",
-      "dez.": "12",
-    };
-  
-    const parts = data.split(" ");
-    const day = parts[1];
-    const month = months[parts[2]];
-    const year = parts[3];
-    const formattedDate = `${year}-${month}-${day}T03:00:00.000Z`;
-  
-    return formattedDate;
-  }
-  
-
   const importData = async () => {
     try {
       const file = await DocumentPicker.getDocumentAsync();
+
+
       if (file.type === 'success' && file.uri) {
         const fileExtension = file.name.split('.').pop();
 
@@ -287,7 +189,6 @@ export default function TransactionsScreen({ navigation }: Prop) {
           const newDateRestore2 = importedData[importedData.length - 1]?.date.substring(indiceComaRestore2 + 1);
           const rangeDateRestore = `De${newDateRestore2} a ${newDateRestore}`
 
-          addTransactions(importedData) 
           updateData(importedData);
           restoreDataBackup(dataRestore, nomeArquivoRestore, quantidadeRegistrosRestore, 0, rangeDateRestore, pathBackup);
           setRestoreData({ dataRestore, nomeArquivoRestore, quantidadeRegistrosRestore, isBackup: 0, rangeDateRestore, pathRestore }),
