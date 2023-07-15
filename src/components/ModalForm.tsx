@@ -37,8 +37,7 @@ export default function ModalForm() {
   };
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
-  const [selectedTab, setSelectedTab] = useState("Income");
-
+  const [selectedTab, setSelectedTab] = useState("Expenses");
 
   const tabs = [
     {
@@ -85,10 +84,12 @@ export default function ModalForm() {
         date: objectToEdit.date,
       });
       setCheckSelected(objectToEdit.transactionType);
+      setSelectedTab(objectToEdit.transactionType)
     }
     if (!modalVisible) {
       setInputValue({ money: "", description: "", date: "" });
-      setCheckSelected("");
+      setSelectedTab("Income")
+      setCheckSelected("Income");
       setSent(false);
     }
   }, [modalVisible, selectedDate]);
