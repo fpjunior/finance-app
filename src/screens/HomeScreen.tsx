@@ -38,7 +38,7 @@ export default function HomeScreen({ navigation }: Prop) {
   const [totalRecord, setTotalRecord] = useState(0);
   const [hasFilter, setHasfilter] = useState(false);
   const [filteredData, setFilteredData] = useState<Transaction[]>([]); // Estado para armazenar os dados filtrados
-  const [originalData, setOriginalData] = useState<Transaction[]>([]); 
+  const [originalData, setOriginalData] = useState<Transaction[]>([]);
   const [refreshing, setRefreshing] = useState(false)
 
 
@@ -48,15 +48,19 @@ export default function HomeScreen({ navigation }: Prop) {
         text: "Cancelar",
         style: "cancel",
       },
-      { text: "OK", onPress: () => deleteTransaction(id) },
+      { text: "OK", onPress: () => {
+
+        deleteTransaction(id) 
+      }
+    },
     ]);
   };
 
-  useEffect(() => {
-    updateData(data)
-    setOriginalData(data);
-    setFilteredData(data);
-  }, []);
+ useEffect(() => {
+  updateData(data);
+  setOriginalData(data);
+  setFilteredData(data);
+}, []);
 
 
   const convertDate = (dataString: any, action: string) => {
@@ -123,7 +127,7 @@ export default function HomeScreen({ navigation }: Prop) {
     const date = new Date(dateString);
     const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
     const pastDaysOfYear = (Number(date) - Number(firstDayOfYear)) / 86400000;
-    const weekNumber = Math.ceil((pastDaysOfYear + firstDayOfYear.getDay()+ 1) / 7);
+    const weekNumber = Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
     return weekNumber;
   };
 
@@ -139,17 +143,15 @@ export default function HomeScreen({ navigation }: Prop) {
   }
 
   const filterByMonth = () => {
-    const mesAtual = new Date().getMonth(); // O valor retornado varia de 0 a 11 (0 para janeiro, 1 para fevereiro, etc.)
+    const mesAtual = new Date().getMonth();
     const filterData = originalData.filter((e: Transaction) => {
       const mesRegistro = convertDate(e.date, 'mes');
-
       return mesRegistro === mesAtual;
-    })
-    setFilteredData(filterData)
-    setHasfilter(true)
-    showToastWithGravity('Mostrando registros do mês atual')
-
-  }
+    });
+    setFilteredData(filterData);
+    setHasfilter(true);
+    showToastWithGravity('Mostrando registros do mês atual');
+  };
 
   const dia = () => {
     const dataAtual = new Date() // O valor retornado varia de 0 a 11 (0 para janeiro, 1 para fevereiro, etc.)
@@ -175,12 +177,12 @@ export default function HomeScreen({ navigation }: Prop) {
 
     setRefreshing(false);
   };
-  
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.containerHeader}>
 
-      <TouchableOpacity
+        <TouchableOpacity
           style={styles.mes}
           activeOpacity={0.8}
           onPress={() => filterByMonth()}
@@ -188,7 +190,7 @@ export default function HomeScreen({ navigation }: Prop) {
           <Text>Mês</Text>
         </TouchableOpacity>
 
-      <TouchableOpacity
+        <TouchableOpacity
           style={styles.mes}
           activeOpacity={0.8}
           onPress={() => filterByExpenses()}
@@ -226,44 +228,39 @@ export default function HomeScreen({ navigation }: Prop) {
           <Ionicons name="stats-chart-outline" size={15} color={Color.icon} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.wrapIcon} activeOpacity={0.8}
-        onPress={() => navigation.navigate("ConfigScreen")}>
+          onPress={() => navigation.navigate("ConfigScreen")}>
           <Ionicons name="settings" size={15} color={Color.icon} />
         </TouchableOpacity>
       </View>
 
       <SwipeListView
-        data={data.length > 0 || hasFilter ? filteredData : originalData}
+        useFlatList={true}
+        data={hasFilter ? filteredData : data}
         keyExtractor={(_, index) => index.toString()}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={<Card titleList="transferências" />}
         contentContainerStyle={{ paddingBottom: 90 }}
         renderItem={({ item }) => {
-          return <ListItemTransactions item={item} />
+          return <ListItemTransactions item={item} />;
         }}
-        renderHiddenItem={({ item }) => {
-          return (
-            <View style={styles.hiddenItem}>
-              <TouchableOpacity
-                style={styles.iconHiddenContainer}
-                activeOpacity={0.8}
-                onPress={() => handleEditTransaction(item.id)}
-              >
-                <Feather name="edit" size={18} color="#19A7CE" />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.iconHiddenContainer}
-                activeOpacity={0.8}
-                onPress={() =>
-                  handleDeleteTransaction(item.description, item.id)
-                }
-              >
-                <AntDesign name="delete" size={18} color={Color.expense} />
-              </TouchableOpacity>
-            </View>
-          );
-        }}
-        windowSize={11}
-
+        renderHiddenItem={({ item }, rowMap) => (
+          <View style={styles.hiddenItem}>
+            <TouchableOpacity
+              style={styles.iconHiddenContainer}
+              activeOpacity={0.8}
+              onPress={() => handleEditTransaction(item.id)}
+            >
+              <Feather name="edit" size={18} color="#19A7CE" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.iconHiddenContainer}
+              activeOpacity={0.8}
+              onPress={() => handleDeleteTransaction(item.description, item.id)}
+            >
+              <AntDesign name="delete" size={18} color={Color.expense} />
+            </TouchableOpacity>
+          </View>
+        )}
         rightOpenValue={-120}
         disableRightSwipe
         refreshControl={
