@@ -60,8 +60,7 @@ export default function HomeScreen({ navigation }: Prop) {
   updateData(data);
   setOriginalData(data);
   setFilteredData(data);
-}, []);
-
+}, [data]);
 
   const convertDate = (dataString: any, action: string) => {
     var diasSemana = {
@@ -106,8 +105,8 @@ export default function HomeScreen({ navigation }: Prop) {
   const filterByExpenses = () => {
     const filteredExpenses = originalData.filter((e: Transaction) => e.transactionType === 'Expenses');
     setFilteredData(filteredExpenses);
-    setHasfilter(true)
-    showToastWithGravity('Mostrando todas as receitas')
+    setHasfilter(true);
+    showToastWithGravity('Mostrando todas as receitas');
   };
 
   const filterByIncomes = () => {
@@ -161,9 +160,7 @@ export default function HomeScreen({ navigation }: Prop) {
     })
     updateData(filterData)
     setHasfilter(true)
-
   }
-
 
   const handleRefresh = async () => {
     setRefreshing(true);
