@@ -50,26 +50,6 @@ export default function ModalForm() {
     },
   ];
 
-  useEffect(() => {
-    if (objectToEdit !== null) {
-      setInputValue({
-        money: objectToEdit.money,
-        description: objectToEdit.description,
-        date: convertDate(objectToEdit.date).toLocaleDateString(),
-      });
-      setCheckSelected(objectToEdit.transactionType);
-      setSelectedTab(objectToEdit.transactionType)
-      // const dateFormatted = convertDate(objectToEdit.date)
-      // setSelectedDate(dateFormatted)
-    }
-    if (!modalVisible) {
-      setInputValue({ money: "", description: "", date: "" });
-      setSelectedTab("Income")
-      setCheckSelected("Income");
-      setSent(false);
-    }
-  }, [modalVisible, selectedDate]);
-
   const handleRestaurarTabPress = (event: any) => {
     // Função para a tab "Restaurar"
     if (event === "Income") {
@@ -95,6 +75,24 @@ export default function ModalForm() {
   const closeDatePicker = () => {
     setIsDatePickerOpen(false);
   };
+
+  useEffect(() => {
+    if (objectToEdit !== null) {
+      setInputValue({
+        money: objectToEdit.money,
+        description: objectToEdit.description,
+        date: objectToEdit.date,
+      });
+      setCheckSelected(objectToEdit.transactionType);
+      setSelectedTab(objectToEdit.transactionType)
+    }
+    if (!modalVisible) {
+      setInputValue({ money: "", description: "", date: "" });
+      setSelectedTab("Income")
+      setCheckSelected("Income");
+      setSent(false);
+    }
+  }, [modalVisible, selectedDate]);
 
   const handleSubmit = () => {
     setSent(true);
@@ -132,41 +130,6 @@ export default function ModalForm() {
     setCheckSelected(value);
   };
 
-  const convertDate = (dataString: any) => {
-    var diasSemana = {
-      "Domingo": 0,
-      "Segunda-feira": 1,
-      "Terça-feira": 2,
-      "Quarta-feira": 3,
-      "Quinta-feira": 4,
-      "Sexta-feira": 5,
-      "Sábado": 6
-    };
-
-    var meses: any = {
-      "jan.": 0,
-      "fev.": 1,
-      "mar.": 2,
-      "abr.": 3,
-      "mai.": 4,
-      "jun.": 5,
-      "jul.": 6,
-      "ago.": 7,
-      "set.": 8,
-      "out.": 9,
-      "nov.": 10,
-      "dez.": 11
-    };
-
-    const partesData = dataString.split(" ");
-    const diaSemana = partesData[0];
-    const dia = parseInt(partesData[1]);
-    const mes = meses[partesData[2]?.toLowerCase()];
-    const ano = parseInt(partesData[3]);
-
-    return new Date(ano, mes, dia);
-  }
-
   return (
     <Modal visible={modalVisible} animationType="slide">
       <KeyboardAwareScrollView contentContainerStyle={{ flexGrow: 1 }}>
@@ -202,7 +165,7 @@ export default function ModalForm() {
                   <TextInput
                     style={styles.inputAmountMoney}
                     placeholder="Selecionar Data"
-                    value={inputValue.date ? inputValue.date : selectedDate.toLocaleDateString()}
+                    value={selectedDate ? selectedDate.toLocaleString() : ''}
                     editable={false}
                     onChangeText={(textValue) => handleChange("date", textValue)}
                   />
@@ -248,44 +211,44 @@ export default function ModalForm() {
                 />
                 {sent && <Text style={styles.errorCheck}>{errors.check}</Text>}
               </View> */}
-              <View style={styles.containerTab}>
-                {tabs.map((item) => {
-                  return (
-                    <LinearGradient
-                      key={item.name}
-                      start={{ x: 0.1, y: 0 }}
-                      end={{ x: 1, y: 1.2 }}
-                      colors={[
-                        item.type === selectedTab ? "#4f80c3" : "#fff",
-                        item.type === selectedTab ? "#c661eb" : "#fff",
-                        item.type === selectedTab ? "#ee8183" : "#fff",
-                      ]}
-                      style={styles.tabGradient}
-                    >
-                      <TouchableOpacity
-                        activeOpacity={1}
-                        style={styles.wrapTab}
-                        onPress={() => handleRestaurarTabPress(item.type)}
+                <View style={styles.containerTab}>
+                  {tabs.map((item) => {
+                    return (
+                      <LinearGradient
+                        key={item.name}
+                        start={{ x: 0.1, y: 0 }}
+                        end={{ x: 1, y: 1.2 }}
+                        colors={[
+                          item.type === selectedTab ? "#4f80c3" : "#fff",
+                          item.type === selectedTab ? "#c661eb" : "#fff",
+                          item.type === selectedTab ? "#ee8183" : "#fff",
+                        ]}
+                        style={styles.tabGradient}
                       >
-                        <Text
-                          style={[
-                            styles.titleTab,
-                            {
-                              color:
-                                item.type === selectedTab
-                                  ? "#fff"
-                                  : Color.fontColorPrimary,
-                            },
-                          ]}
+                        <TouchableOpacity
+                          activeOpacity={1}
+                          style={styles.wrapTab}
+                          onPress={() => handleRestaurarTabPress(item.type)}
                         >
-                          {item.name}
-                        </Text>
-                      </TouchableOpacity>
-                    </LinearGradient>
-                  );
-                })}
-              </View>
-              {sent && <Text style={styles.errorCheck}>{errors.check}</Text>}
+                          <Text
+                            style={[
+                              styles.titleTab,
+                              {
+                                color:
+                                  item.type === selectedTab
+                                    ? "#fff"
+                                    : Color.fontColorPrimary,
+                              },
+                            ]}
+                          >
+                            {item.name}
+                          </Text>
+                        </TouchableOpacity>
+                      </LinearGradient>
+                    );
+                  })}
+                </View>
+                {sent && <Text style={styles.errorCheck}>{errors.check}</Text>}
             </View>
             <TouchableOpacity activeOpacity={0.8} onPress={handleSubmit}>
               <LinearGradient
