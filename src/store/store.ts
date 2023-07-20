@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import { Transaction } from "../interface/interfaceTransaction";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Alert } from "react-native";
+import { useState } from "react";
 interface ValueInput {
   money: string;
   description: string;
@@ -32,6 +33,7 @@ type Action = {
 };
 
 export const useStoreTransaction = create(
+
   persist<State & Action>(
     (set) => ({
       data: [],

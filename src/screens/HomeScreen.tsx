@@ -20,6 +20,7 @@ import { RootStackParamsList } from "../navigation/Navigation";
 import React, { useState, useEffect } from "react";
 import { Transaction } from "../interface/interfaceTransaction";
 import { showToast, showToastWithGravity } from "../components/Toast";
+import Loading from "../components/Loading";
 // import { RefreshControl } from "react-native-gesture-handler";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
@@ -33,14 +34,23 @@ type Prop = {
 
 export default function HomeScreen({ navigation }: Prop) {
   const { data, deleteTransaction, updateData } = useStoreTransaction();
-  const { handleEditTransaction } = useTransactionContext();
   const [importedData, setImportedData] = useState([]);
   const [totalRecord, setTotalRecord] = useState(0);
   const [hasFilter, setHasfilter] = useState(false);
   const [filteredData, setFilteredData] = useState<Transaction[]>([]); // Estado para armazenar os dados filtrados
   const [originalData, setOriginalData] = useState<Transaction[]>([]);
-  const [refreshing, setRefreshing] = useState(false)
+  // const [refreshing, setRefreshing] = useState(true);
+  const { handleEditTransaction, isLoading, setIsLoading } = useTransactionContext();
+  const [loading, setLoading] = useState(true);
 
+
+
+  useEffect(() => {
+    setTimeout(() => setLoading(false), 500);
+    updateData(data);
+    setOriginalData(data);
+    setFilteredData(data);
+  }, [loading]);
 
   const handleDeleteTransaction = (description: string, id: string) => {
     Alert.alert("Tem certeza que deseja deletar?", `${description}`, [
@@ -48,19 +58,15 @@ export default function HomeScreen({ navigation }: Prop) {
         text: "Cancelar",
         style: "cancel",
       },
-      { text: "OK", onPress: () => {
-
-        deleteTransaction(id) 
-      }
-    },
+      {
+        text: "OK", onPress: () => {
+          deleteTransaction(id)
+          setIsLoading(true)
+        }
+      },
     ]);
   };
 
- useEffect(() => {
-  updateData(data);
-  setOriginalData(data);
-  setFilteredData(data);
-}, []);
 
 
   const convertDate = (dataString: any, action: string) => {
@@ -166,7 +172,7 @@ export default function HomeScreen({ navigation }: Prop) {
 
 
   const handleRefresh = async () => {
-    setRefreshing(true);
+    setIsLoading(true);
 
     try {
       await updateData(data);
@@ -175,99 +181,99 @@ export default function HomeScreen({ navigation }: Prop) {
       console.log('Erro ao atualizar os dados:', error);
     }
 
-    setRefreshing(false);
+    setIsLoading(false);
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.containerHeader}>
+          <View style={styles.containerHeader}>
 
-        <TouchableOpacity
-          style={styles.mes}
-          activeOpacity={0.8}
-          onPress={() => filterByMonth()}
-        >
-          <Text>Mês</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.mes}
-          activeOpacity={0.8}
-          onPress={() => filterByExpenses()}
-        >
-          <Text>Despesas</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.mes}
-          activeOpacity={0.8}
-          onPress={() => filterByIncomes()}
-        >
-          <Text>Receitas</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.mes}
-          activeOpacity={0.8}
-          onPress={() => resetFilter()}
-        >
-          <Text>Todos</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.wrapIcon}
-          activeOpacity={0.8}
-          onPress={() => navigation.navigate("TransactionsScreen")}
-        >
-          <Ionicons name="ios-swap-horizontal" size={18} color={Color.icon} />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.wrapIcon}
-          activeOpacity={0.8}
-          onPress={() => navigation.navigate("StatisticsScreen")}
-        >
-          <Ionicons name="stats-chart-outline" size={15} color={Color.icon} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.wrapIcon} activeOpacity={0.8}
-          onPress={() => navigation.navigate("ConfigScreen")}>
-          <Ionicons name="settings" size={15} color={Color.icon} />
-        </TouchableOpacity>
-      </View>
-
-      <SwipeListView
-        useFlatList={true}
-        data={hasFilter ? filteredData : data}
-        keyExtractor={(_, index) => index.toString()}
-        showsVerticalScrollIndicator={false}
-        ListHeaderComponent={<Card titleList="transferências" />}
-        contentContainerStyle={{ paddingBottom: 90 }}
-        renderItem={({ item }) => {
-          return <ListItemTransactions item={item} />;
-        }}
-        renderHiddenItem={({ item }, rowMap) => (
-          <View style={styles.hiddenItem}>
             <TouchableOpacity
-              style={styles.iconHiddenContainer}
+              style={styles.mes}
               activeOpacity={0.8}
-              onPress={() => handleEditTransaction(item.id)}
+              onPress={() => filterByMonth()}
             >
-              <Feather name="edit" size={18} color="#19A7CE" />
+              <Text>Mês</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.mes}
+              activeOpacity={0.8}
+              onPress={() => filterByExpenses()}
+            >
+              <Text>Despesas</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.mes}
+              activeOpacity={0.8}
+              onPress={() => filterByIncomes()}
+            >
+              <Text>Receitas</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.mes}
+              activeOpacity={0.8}
+              onPress={() => resetFilter()}
+            >
+              <Text>Todos</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={styles.iconHiddenContainer}
+              style={styles.wrapIcon}
               activeOpacity={0.8}
-              onPress={() => handleDeleteTransaction(item.description, item.id)}
+              onPress={() => navigation.navigate("TransactionsScreen")}
             >
-              <AntDesign name="delete" size={18} color={Color.expense} />
+              <Ionicons name="ios-swap-horizontal" size={18} color={Color.icon} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.wrapIcon}
+              activeOpacity={0.8}
+              onPress={() => navigation.navigate("StatisticsScreen")}
+            >
+              <Ionicons name="stats-chart-outline" size={15} color={Color.icon} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.wrapIcon} activeOpacity={0.8}
+              onPress={() => navigation.navigate("ConfigScreen")}>
+              <Ionicons name="settings" size={15} color={Color.icon} />
             </TouchableOpacity>
           </View>
-        )}
-        rightOpenValue={-120}
-        disableRightSwipe
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-        }
-      />
-      <FloatingButton />
+          <SwipeListView
+            useFlatList={true}
+            data={hasFilter ? filteredData : data}
+            keyExtractor={(_, index) => index.toString()}
+            showsVerticalScrollIndicator={false}
+            ListHeaderComponent={<Card titleList="transferências" />}
+            contentContainerStyle={{ paddingBottom: 90 }}
+            renderItem={({ item }) => {
+              return <ListItemTransactions item={item} />;
+            }}
+            renderHiddenItem={({ item }, rowMap) => (
+
+              <View style={styles.hiddenItem}>
+                <TouchableOpacity
+                  style={styles.iconHiddenContainer}
+                  activeOpacity={0.8}
+                  onPress={() => handleEditTransaction(item.id)}
+                >
+                  <Feather name="edit" size={18} color="#19A7CE" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.iconHiddenContainer}
+                  activeOpacity={0.8}
+                  onPress={() => handleDeleteTransaction(item.description, item.id)}
+                >
+                  <AntDesign name="delete" size={18} color={Color.expense} />
+                </TouchableOpacity>
+              </View>
+            )}
+            rightOpenValue={-120}
+            disableRightSwipe
+            refreshControl={
+              <RefreshControl refreshing={isLoading} onRefresh={handleRefresh} />
+            }
+          />
+          <FloatingButton />
     </SafeAreaView>
   );
 }
