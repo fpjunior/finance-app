@@ -1,15 +1,15 @@
-import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Color } from "../constants/theme";
 import { Transaction } from "../interface/interfaceTransaction";
 import { formatQuantity } from "../helpers";
 import { DateTime } from "luxon";
+import React, { memo } from 'react';
 
 type Prop = {
   item: Transaction;
 };
 
-export default function ListItemTransactions({ item }: Prop) {
+const ListItemTransactions = ({ item }: Prop) => {
   const { description, money, transactionType, date } = item;
   // const dateTime = DateTime.fromJSDate(new Date(item.date));
   // item.date = dateTime.setLocale("pt-BR").toFormat("cccc, d LLL y");
@@ -55,7 +55,11 @@ export default function ListItemTransactions({ item }: Prop) {
       </View>
     </View>
   );
+
 }
+const MemoizedMyComponent = memo(ListItemTransactions);
+
+export default MemoizedMyComponent;
 
 const styles = StyleSheet.create({
   container: {

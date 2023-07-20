@@ -20,8 +20,7 @@ import { RootStackParamsList } from "../navigation/Navigation";
 import React, { useState, useEffect } from "react";
 import { Transaction } from "../interface/interfaceTransaction";
 import { showToast, showToastWithGravity } from "../components/Toast";
-import Loading from "../components/Loading";
-// import { RefreshControl } from "react-native-gesture-handler";
+import MemoizedMyComponent from "../components/ListItemTransactions";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamsList,
@@ -33,17 +32,12 @@ type Prop = {
 };
 
 export default function HomeScreen({ navigation }: Prop) {
-  const { data, deleteTransaction, updateData } = useStoreTransaction();
-  const [importedData, setImportedData] = useState([]);
-  const [totalRecord, setTotalRecord] = useState(0);
+  const { data, deleteTransaction, updateData, filterData } = useStoreTransaction();
   const [hasFilter, setHasfilter] = useState(false);
   const [filteredData, setFilteredData] = useState<Transaction[]>([]); // Estado para armazenar os dados filtrados
   const [originalData, setOriginalData] = useState<Transaction[]>([]);
-  // const [refreshing, setRefreshing] = useState(true);
   const { handleEditTransaction, isLoading, setIsLoading } = useTransactionContext();
   const [loading, setLoading] = useState(true);
-
-
 
   useEffect(() => {
     setTimeout(() => setLoading(false), 500);
@@ -67,19 +61,7 @@ export default function HomeScreen({ navigation }: Prop) {
     ]);
   };
 
-
-
   const convertDate = (dataString: any, action: string) => {
-    var diasSemana = {
-      "Domingo": 0,
-      "Segunda-feira": 1,
-      "Terça-feira": 2,
-      "Quarta-feira": 3,
-      "Quinta-feira": 4,
-      "Sexta-feira": 5,
-      "Sábado": 6
-    };
-
     var meses: any = {
       "jan.": 0,
       "fev.": 1,
@@ -96,7 +78,6 @@ export default function HomeScreen({ navigation }: Prop) {
     };
 
     const partesData = dataString.split(" ");
-    const diaSemana = partesData[0];
     const dia = parseInt(partesData[1]);
     const mes = meses[partesData[2]?.toLowerCase()];
     const ano = parseInt(partesData[3]);
@@ -124,7 +105,8 @@ export default function HomeScreen({ navigation }: Prop) {
   };
 
   const resetFilter = () => {
-    setFilteredData(originalData);
+    updateData(originalData)
+    // setFilteredData(originalData);
     setHasfilter(false)
     showToastWithGravity('Mostrando todos os registros')
   };
@@ -154,7 +136,8 @@ export default function HomeScreen({ navigation }: Prop) {
       const mesRegistro = convertDate(e.date, 'mes');
       return mesRegistro === mesAtual;
     });
-    setFilteredData(filterData);
+    updateData(filterData)
+    // setFilteredData(filterData);
     setHasfilter(true);
     showToastWithGravity('Mostrando registros do mês atual');
   };
@@ -167,9 +150,7 @@ export default function HomeScreen({ navigation }: Prop) {
     })
     updateData(filterData)
     setHasfilter(true)
-
   }
-
 
   const handleRefresh = async () => {
     setIsLoading(true);
@@ -238,15 +219,16 @@ export default function HomeScreen({ navigation }: Prop) {
               <Ionicons name="settings" size={15} color={Color.icon} />
             </TouchableOpacity>
           </View>
+          
           <SwipeListView
             useFlatList={true}
-            data={hasFilter ? filteredData : data}
+            data={data}
             keyExtractor={(_, index) => index.toString()}
             showsVerticalScrollIndicator={false}
-            ListHeaderComponent={<Card titleList="transferências" />}
+            ListHeaderComponent={<Card titleList="Últimas movimetações" />}
             contentContainerStyle={{ paddingBottom: 90 }}
             renderItem={({ item }) => {
-              return <ListItemTransactions item={item} />;
+              return <MemoizedMyComponent item={item} />;
             }}
             renderHiddenItem={({ item }, rowMap) => (
 
@@ -267,6 +249,7 @@ export default function HomeScreen({ navigation }: Prop) {
                 </TouchableOpacity>
               </View>
             )}
+            previewRowKey={data[0]?.id}
             rightOpenValue={-120}
             disableRightSwipe
             refreshControl={

@@ -25,6 +25,7 @@ type Action = {
   ) => void;
   deleteTransaction: (id: string) => void;
   updateData: (newData: Transaction[]) => void;
+  filterData: (newData: Transaction[]) => void;
   updateTransaction: (
     newItem: ValueInput | undefined,
     itemId: string | null,
@@ -61,6 +62,12 @@ export const useStoreTransaction = create(
         })),
 
         updateData: (newData: Transaction[]) =>
+        set((state) => ({
+          ...state,
+          data: newData,
+        })),
+
+        filterData: (newData: Transaction[]) =>
         set((state) => ({
           ...state,
           data: newData,
