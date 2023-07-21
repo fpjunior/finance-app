@@ -43,7 +43,6 @@ export default function HomeScreen({ navigation }: Prop) {
     setTimeout(() => setLoading(false), 500);
     updateData(data);
     setOriginalData(data);
-    setFilteredData(data);
   }, [loading]);
 
   const handleDeleteTransaction = (description: string, id: string) => {
@@ -92,14 +91,16 @@ export default function HomeScreen({ navigation }: Prop) {
 
   const filterByExpenses = () => {
     const filteredExpenses = originalData.filter((e: Transaction) => e.transactionType === 'Expenses');
-    setFilteredData(filteredExpenses);
+    // setFilteredData(filteredExpenses);
+    updateData(filteredExpenses);
     setHasfilter(true)
     showToastWithGravity('Mostrando todas as receitas')
   };
 
   const filterByIncomes = () => {
     const filteredIncomes = originalData.filter((e: Transaction) => e.transactionType === 'Income');
-    setFilteredData(filteredIncomes);
+    // setFilteredData(filteredIncomes);
+    updateData(filteredIncomes);
     setHasfilter(true)
     showToastWithGravity('Mostrando todas as despesas')
   };
@@ -137,7 +138,6 @@ export default function HomeScreen({ navigation }: Prop) {
       return mesRegistro === mesAtual;
     });
     updateData(filterData)
-    // setFilteredData(filterData);
     setHasfilter(true);
     showToastWithGravity('Mostrando registros do mês atual');
   };

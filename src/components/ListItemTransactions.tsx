@@ -2,7 +2,6 @@ import { View, Text, StyleSheet } from "react-native";
 import { Color } from "../constants/theme";
 import { Transaction } from "../interface/interfaceTransaction";
 import { formatQuantity } from "../helpers";
-import { DateTime } from "luxon";
 import React, { memo } from 'react';
 
 type Prop = {

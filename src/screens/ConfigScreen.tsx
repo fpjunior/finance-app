@@ -83,45 +83,6 @@ export default function TransactionsScreen({ navigation }: Prop) {
     }
   };
 
-  useEffect(() => {
-    // Realiza a consulta na tabela 'backup' para buscar os dados
-    dbBackup.transaction((tx) => {
-      tx.executeSql(
-        'SELECT * FROM backup',
-        [],
-        (_, resultSet) => {
-          const { rows } = resultSet;
-          if (rows.length > 0) {
-            const { dataSalvo, nomeArquivo, quantidadeRegistros, isBackup, rangeDateBackup, pathBackup } = rows.item(0);
-            setBackupData({ dataSalvo, nomeArquivo, quantidadeRegistros, isBackup, rangeDateBackup, pathBackup });
-          }
-        },
-        (_, error) => {
-          console.log('Erro ao buscar dados de backup:', error);
-          return false; // Return false to satisfy the expected boolean return type
-        }
-      );
-    });
-
-    dbBackup.transaction((tx) => {
-      tx.executeSql(
-        'SELECT * FROM restore',
-        [],
-        (_, resultSet) => {
-          const { rows } = resultSet;
-          if (rows.length > 0) {
-            const { dataRestore, nomeArquivoRestore, quantidadeRegistrosRestore, isBackup, rangeDateRestore, pathRestore } = rows.item(0);
-            setRestoreData({ dataRestore, nomeArquivoRestore, quantidadeRegistrosRestore, isBackup, rangeDateRestore, pathRestore });
-          }
-        },
-        (_, error) => {
-          console.log('Erro ao buscar dados do restore:', error);
-          return false; // Return false to satisfy the expected boolean return type
-        }
-      );
-    });
-  }, []);
-
   const downloadFromUrl = async () => {
     const dataSalvo = new Date().toLocaleString('pt-br').split("/").join('-').split(' ').join('-');
     const nomeArquivo = 'bkp-finance-app-' + dataSalvo + '.json';
