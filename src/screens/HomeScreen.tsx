@@ -35,15 +35,16 @@ export default function HomeScreen({ navigation }: Prop) {
   const { data, deleteTransaction, updateData, filterData } = useStoreTransaction();
   const [hasFilter, setHasfilter] = useState(false);
   const [filteredData, setFilteredData] = useState<Transaction[]>([]); // Estado para armazenar os dados filtrados
-  const [originalData, setOriginalData] = useState<Transaction[]>([]);
+  const [originalData, setOriginalData] = useState<Transaction[]>(data);
   const { handleEditTransaction, isLoading, setIsLoading } = useTransactionContext();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setTimeout(() => setLoading(false), 500);
+    setFilteredData(data);
     updateData(data);
     setOriginalData(data);
-  }, [loading]);
+  }, [loading, data]);
 
   const handleDeleteTransaction = (description: string, id: string) => {
     Alert.alert("Tem certeza que deseja deletar?", `${description}`, [
@@ -92,22 +93,20 @@ export default function HomeScreen({ navigation }: Prop) {
   const filterByExpenses = () => {
     const filteredExpenses = originalData.filter((e: Transaction) => e.transactionType === 'Expenses');
     // setFilteredData(filteredExpenses);
-    updateData(filteredExpenses);
+    setFilteredData(filteredExpenses);
     setHasfilter(true)
     showToastWithGravity('Mostrando todas as receitas')
   };
 
   const filterByIncomes = () => {
     const filteredIncomes = originalData.filter((e: Transaction) => e.transactionType === 'Income');
-    // setFilteredData(filteredIncomes);
-    updateData(filteredIncomes);
+    setFilteredData(filteredIncomes);
     setHasfilter(true)
     showToastWithGravity('Mostrando todas as despesas')
   };
 
   const resetFilter = () => {
-    updateData(originalData)
-    // setFilteredData(originalData);
+    setFilteredData(originalData)
     setHasfilter(false)
     showToastWithGravity('Mostrando todos os registros')
   };
@@ -126,7 +125,7 @@ export default function HomeScreen({ navigation }: Prop) {
       const semanaRegistro = getWeekNumber(convertDate(registro.date, 'data'));
       return semanaRegistro === semanaAtual;
     });
-    updateData(filterData)
+    setFilteredData(filterData)
     setHasfilter(true)
     showToastWithGravity('Mostrando registros da semana atual')
   }
@@ -137,7 +136,7 @@ export default function HomeScreen({ navigation }: Prop) {
       const mesRegistro = convertDate(e.date, 'mes');
       return mesRegistro === mesAtual;
     });
-    updateData(filterData)
+    setFilteredData(filterData)
     setHasfilter(true);
     showToastWithGravity('Mostrando registros do mês atual');
   };
@@ -148,7 +147,7 @@ export default function HomeScreen({ navigation }: Prop) {
       const dataRegistro = convertDate(e.date, 'data');
       return dataRegistro.toString().split(' ').slice(0, 4).join(' ') === dataAtual.toString().split(' ').slice(0, 4).join(' ');
     })
-    updateData(filterData)
+    setFilteredData(filterData)
     setHasfilter(true)
   }
 
@@ -222,7 +221,7 @@ export default function HomeScreen({ navigation }: Prop) {
           
           <SwipeListView
             useFlatList={true}
-            data={data}
+            data={filteredData}
             keyExtractor={(_, index) => index.toString()}
             showsVerticalScrollIndicator={false}
             ListHeaderComponent={<Card titleList="Últimas movimetações" />}
