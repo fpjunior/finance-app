@@ -70,6 +70,50 @@ export default function TransactionsScreen({ navigation }: Prop) {
   const [pathBackup, setPathBackup] = useState('')
   const [pathRestore, setPathRestore] = useState('')
 
+  useEffect(() => {
+    // Retrieve backup data
+    dbBackup.transaction((tx) => {
+      tx.executeSql(
+        'SELECT * FROM backup WHERE id = 1',
+        [],
+        (_, resultSet) => {
+          if (resultSet.rows.length > 0) {
+            const data = resultSet.rows.item(0);
+            setBackupData(data);
+          } else {
+            // No backup data found
+            setBackupData(null);
+          }
+        },
+        (_, error) => {
+          console.log('Error fetching backup data:', error);
+          return false
+        }
+      );
+    });
+
+    // Retrieve restore data
+    dbBackup.transaction((tx) => {
+      tx.executeSql(
+        'SELECT * FROM restore WHERE id = 1',
+        [],
+        (_, resultSet) => {
+          if (resultSet.rows.length > 0) {
+            const data = resultSet.rows.item(0);
+            setRestoreData(data);
+          } else {
+            // No restore data found
+            setRestoreData(null);
+          }
+        },
+        (_, error) => {
+          console.log('Error fetching restore data:', error);
+          return false
+        }
+      );
+    });
+  }, []);
+
   const handleRestaurarTabPress = (event: any) => {
     // Função para a tab "Restaurar"
     if (event === "Restaurar") {
