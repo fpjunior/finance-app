@@ -41,7 +41,8 @@ export default function HomeScreen({ navigation }: Prop) {
 
   useEffect(() => {
     setTimeout(() => setLoading(false), 500);
-    setFilteredData(data);
+    const last30Records = data.slice(0, 30);
+    setFilteredData(last30Records);
     updateData(data);
     setOriginalData(data);
   }, [loading, data]);
