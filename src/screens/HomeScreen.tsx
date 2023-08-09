@@ -41,7 +41,7 @@ export default function HomeScreen({ navigation }: Prop) {
 
   useEffect(() => {
     setTimeout(() => setLoading(false), 500);
-    const last30Records = data.slice(0, 30);
+    const last30Records = data.slice(0, 5);
     setFilteredData(last30Records);
     updateData(data);
     setOriginalData(data);
@@ -210,7 +210,7 @@ export default function HomeScreen({ navigation }: Prop) {
             <TouchableOpacity
               style={styles.wrapIcon}
               activeOpacity={0.8}
-              onPress={() => navigation.navigate("StatisticsScreen")}
+              onPress={() => navigation.navigate("SearchItemScreen")}
             >
               <Ionicons name="stats-chart-outline" size={15} color={Color.icon} />
             </TouchableOpacity>
@@ -225,7 +225,7 @@ export default function HomeScreen({ navigation }: Prop) {
             data={filteredData}
             keyExtractor={(_, index) => index.toString()}
             showsVerticalScrollIndicator={false}
-            ListHeaderComponent={<Card titleList="Últimas movimetações" />}
+            ListHeaderComponent={<Card titleList="Últimas movimetações" navigation={navigation} />}
             contentContainerStyle={{ paddingBottom: 90 }}
             renderItem={({ item }) => {
               return <MemoizedMyComponent item={item} />;

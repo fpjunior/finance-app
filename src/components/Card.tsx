@@ -1,5 +1,5 @@
-import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, TouchableWithoutFeedback } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { AntDesign } from "@expo/vector-icons";
 import { Color } from "../constants/theme";
@@ -8,11 +8,21 @@ import { useTransactionContext } from "../context/AppContext";
 import { useStoreTransaction } from "../store/store";
 import { Ionicons } from "@expo/vector-icons";
 
+import { NavigationProp } from "@react-navigation/native";
+import { RootStackParamsList } from '../navigation/Navigation';
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+
+type CardNavigationProp = NativeStackNavigationProp<
+  RootStackParamsList,
+  "HomeScreen"
+>;
+
 type Prop = {
   titleList?: string;
+  navigation?: CardNavigationProp;
 };
 
-export default function Card({ titleList }: Prop) {
+export default function Card({ titleList, navigation }: Prop) {
   const { data } = useStoreTransaction();
   const { totalIncome, totalExpenses, total, eyeShow, setEyeShow } =
     useTransactionContext();
@@ -22,6 +32,18 @@ export default function Card({ titleList }: Prop) {
 
   let indiceComa2 = data[data.length - 1]?.date.indexOf(",");
   let newDate2 = data[data.length - 1]?.date.substring(indiceComa2 + 1);
+
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+
+
+  const toggleModal = () => {
+    setIsModalVisible(!isModalVisible);
+  };
+
+  const closeModal = () => {
+    setIsModalVisible(false);
+  };
 
   return (
     <>
@@ -43,9 +65,9 @@ export default function Card({ titleList }: Prop) {
           activeOpacity={1}
           style={styles.containerTotal}
         >
-          <Text style={styles.total}>
+          {/* <Text style={styles.total}>
             {eyeShow ? formatQuantity(total) : "******"}
-          </Text>
+          </Text> */}
           <Ionicons
             name={eyeShow ? "eye-outline" : "eye-off-outline"}
             size={24}
@@ -58,7 +80,7 @@ export default function Card({ titleList }: Prop) {
               <AntDesign name="arrowup" size={15} color={Color.income} />
             </View>
             <View>
-              <Text style={styles.title}>Ingresos</Text>
+              <Text style={styles.title}>Entradas</Text>
               <Text style={styles.money}>
                 {eyeShow ? formatQuantity(totalIncome) : "******"}
               </Text>
@@ -69,7 +91,7 @@ export default function Card({ titleList }: Prop) {
               <AntDesign name="arrowdown" size={15} color={Color.expense} />
             </View>
             <View>
-              <Text style={styles.title}>Gastos</Text>
+              <Text style={styles.title}>Saídas</Text>
               <Text style={styles.money}>
                 {eyeShow ? formatQuantity(totalExpenses) : "******"}
               </Text>
@@ -77,12 +99,79 @@ export default function Card({ titleList }: Prop) {
           </View>
         </View>
       </LinearGradient>
+       
+        <View style={styles.div}>
       {titleList && <Text style={styles.titleList}>{titleList}</Text>}
+
+      <TouchableOpacity
+          activeOpacity={1}
+          style={styles.containerTotal2}
+          onPress={() => {navigation?.navigate("SearchItemScreen")}}
+        >
+          <Ionicons
+            name={eyeShow ? "ellipsis-vertical-outline" : "eye-off-outline"}
+            size={24}
+            color="black"
+          />
+        </TouchableOpacity>
+
+        <Modal
+        visible={isModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={closeModal}
+      >
+           <TouchableWithoutFeedback onPress={closeModal}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              {/* Seu conteúdo do modal aqui */}
+              <TouchableOpacity onPress={closeModal}>
+                <Text>Fechar Modal</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
+        {/* Conteúdo do modal */}
+        <View style={styles.modalContent}>
+          {/* Seu conteúdo do modal aqui */}
+          <TouchableOpacity onPress={toggleModal}>
+            <Text>Fechar Modal</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
+        </View>
     </>
   );
 }
 
 const styles = StyleSheet.create({
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)", // Fundo escuro transparente
+  },
+  containerTotal2: {
+    marginLeft: 230
+  },
+  div: {
+    flexDirection: "row", // Define a direção dos elementos como horizontal
+    alignItems: "center", // Centraliza verticalmente os elementos
+    // justifyContent: "space-evenly", // Espaço igual entre os elementos
+    // ... outros estilos que você já tem
+    // 'flex-start'
+    // | 'flex-end'
+    // | 'center'
+    // | 'space-between'
+    // | 'space-around'
+    // | 'space-evenly'
+  },
   container: {
     marginHorizontal: 24,
     borderRadius: 16,

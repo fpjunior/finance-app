@@ -32,7 +32,7 @@ export const AppContext = ({ children }: { children: JSX.Element }) => {
     setTimeout(() => setIsLoading(false), 500);
   }, [isLoading]);
 
-  const filterIncome = data.filter((item) => item.transactionType === "Income");
+  const filterIncome = data.filter((item: any) => item.transactionType === "Income");
   const totalIncome = filterIncome.reduce(
     (accumulador, currentValue) => accumulador + Number(currentValue.money),
     0

@@ -6,6 +6,7 @@ import StatisticsScreen from "../screens/StatisticsScreen";
 import OnboardingScreen from "../screens/OnboardingScreen";
 import SearchScreen from "../screens/SearchScreen";
 import ConfigScreen from "../screens/ConfigScreen";
+import SearchItemScreen from "../screens/SearchItemScreen";
 
 export type RootStackParamsList = {
   OnboardingScreen: undefined;
@@ -14,6 +15,8 @@ export type RootStackParamsList = {
   StatisticsScreen: undefined;
   SearchScreen: undefined;
   ConfigScreen: undefined;
+  SearchItemScreen: undefined;
+
 };
 
 const Stack = createNativeStackNavigator<RootStackParamsList>();
@@ -46,9 +49,14 @@ export default function Navigation() {
         component={SearchScreen}
         options={{ headerShown: false }}
       />
-          <Stack.Screen
+      <Stack.Screen
         name="ConfigScreen"
         component={ConfigScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="SearchItemScreen"
+        component={SearchItemScreen}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

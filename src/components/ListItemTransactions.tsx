@@ -66,12 +66,12 @@ const styles = StyleSheet.create({
   },
   containerItem: {
     backgroundColor: "#fff",
-    marginBottom: 12,
+    marginBottom: 2,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     padding: 10,
-    borderRadius: 10,
+    borderRadius: 4,
   },
   circleItem: {
     height: 40,
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
   },
   wrapTitleEndDate: {
     flex: 1,
-    height: 40,
+    height: 35,
   },
   title: {
     color: "#000",
