@@ -5,4 +5,5 @@ export interface Transaction {
   id: string;
   date: string;
   currentMonth: string;
+  originalDate: string;
 }

@@ -3,13 +3,13 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import { Transaction } from "../interface/interfaceTransaction";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Alert } from "react-native";
+import { DateTime } from "luxon";
 import { useState } from "react";
 interface ValueInput {
   money: string;
   description: string;
   date: string;
 }
-// dsadfsadfasd
 
 type State = {
   data: Transaction[];
@@ -21,7 +21,8 @@ type Action = {
     transactionType: string,
     id: string,
     date: string,
-    currentMonth: string
+    currentMonth: string,
+    originalDate: string,
   ) => void;
   deleteTransaction: (id: string) => void;
   updateData: (newData: Transaction[]) => void;
@@ -29,7 +30,8 @@ type Action = {
   updateTransaction: (
     newItem: ValueInput | undefined,
     itemId: string | null,
-    transactionType: string
+    transactionType: string,
+    originalData: string,
   ) => void;
 };
 
@@ -44,12 +46,13 @@ export const useStoreTransaction = create(
         transactionType: string,
         id: string,
         date: string,
-        currentMonth: string
+        currentMonth: string,
+        originalDate: string
       ) =>
         set((state) => ({
           ...state,
           data: [
-            { ...value, transactionType, id, date, currentMonth },
+            { ...value, transactionType, id, date, currentMonth, originalDate },
             ...state.data,
           ],
         })),
@@ -78,11 +81,12 @@ export const useStoreTransaction = create(
       updateTransaction: (
         newItem: ValueInput | undefined,
         itemId: string | null,
-        transactionType: string
+        transactionType: string,
+        originalDate: string,
       ) =>
         set((state) => ({
           data: state.data.map((item) =>
-            item.id === itemId ? { ...item, ...newItem, transactionType } : item
+            item.id === itemId ? { ...item, ...newItem, transactionType, originalDate } : item
           ),
         })),
     }),

@@ -64,6 +64,7 @@ export default function ModalForm() {
   };
 
   const handleDateChange = (date: any) => {
+    
     closeDatePicker();
     setSelectedDate(date);
   };
@@ -81,8 +82,9 @@ export default function ModalForm() {
       setInputValue({
         money: objectToEdit.money,
         description: objectToEdit.description,
-        date: objectToEdit.date,
+        date: new Date(objectToEdit.originalDate).toLocaleDateString('pt-BR'),
       });
+      
       setCheckSelected(objectToEdit.transactionType);
       setSelectedTab(objectToEdit.transactionType)
     }
@@ -106,17 +108,19 @@ export default function ModalForm() {
       return;
 
     const dateTime = DateTime.fromJSDate(selectedDate);
+    const originalDate = dateTime.toISO() ?? '';
     const formattedDate2 = dateTime.setLocale("pt-BR").toFormat("cccc, d LLL y");
     if (objectToEdit !== null) {
 
-      updateTransaction({ ...inputValue, date: new Date(selectedDate).toISOString() }, itemId, checkSelected);
+      updateTransaction({ ...inputValue, date: formattedDate2 }, itemId, checkSelected, originalDate);
     } else {
       addTransaction(
-        { ...inputValue, date: new Date(selectedDate).toISOString() },
+        { ...inputValue, date: formattedDate2 },
         checkSelected,
         getCurrentTimestamp(),
         formattedDate2,
         currentMonth,
+        originalDate
       );
     }
 
@@ -165,7 +169,7 @@ export default function ModalForm() {
                   <TextInput
                     style={styles.inputAmountMoney}
                     placeholder="Selecionar Data"
-                    value={selectedDate ? selectedDate.toLocaleString() : ''}
+                    value={inputValue.date || selectedDate.toLocaleDateString('pt-BR')}
                     editable={false}
                     onChangeText={(textValue) => handleChange("date", textValue)}
                   />
