@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -11,13 +11,13 @@ import { Color } from "../constants/theme";
 import { Entypo } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import CheckBoxForm from "./CheckBoxForm";
 import { useStoreTransaction } from "../store/store";
 import { currentMonth, getCurrentTimestamp } from "../helpers";
 import { useTransactionContext } from "../context/AppContext";
 import { useValidate } from "../helpers/validateForm";
 import RNDateTimePicker from '@react-native-community/datetimepicker';
 import { DateTime } from "luxon";
+import TabRenderer from "./TabRenders";
 
 export default function ModalForm() {
   const [sent, setSent] = useState(false);
@@ -38,6 +38,7 @@ export default function ModalForm() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState("Expenses");
+  const [dateAux, setDateAux] = useState("");
 
   const tabs = [
     {
@@ -50,24 +51,21 @@ export default function ModalForm() {
     },
   ];
 
-  const handleRestaurarTabPress = (event: any) => {
-    // Função para a tab "Restaurar"
+  const handleRestaurarTabPress = useCallback((event: string) => {
     if (event === "Income") {
-      setSelectedTab("Income")
+      setSelectedTab("Income");
       setCheckSelected("Income");
-      console.log(event)
     } else {
-      setSelectedTab("Expenses")
+      setSelectedTab("Expenses");
       setCheckSelected("Expenses");
-      console.log(event)
     }
-  };
+  }, []);
 
-  const handleDateChange = (date: any) => {
-    
+  const handleDateChange = useCallback((date: any) => {
     closeDatePicker();
     setSelectedDate(date);
-  };
+    setDateAux(date.toLocaleDateString('pt-BR'));
+  }, []);
 
   const openDatePicker = () => {
     setIsDatePickerOpen(true);
@@ -78,16 +76,6 @@ export default function ModalForm() {
   };
 
   useEffect(() => {
-    if (objectToEdit !== null) {
-      setInputValue({
-        money: objectToEdit.money,
-        description: objectToEdit.description,
-        date: new Date(objectToEdit.originalDate).toLocaleDateString('pt-BR'),
-      });
-      
-      setCheckSelected(objectToEdit.transactionType);
-      setSelectedTab(objectToEdit.transactionType)
-    }
     if (!modalVisible) {
       setInputValue({ money: "", description: "", date: "" });
       setSelectedTab("Income")
@@ -95,6 +83,22 @@ export default function ModalForm() {
       setSent(false);
     }
   }, [modalVisible, selectedDate]);
+
+  useEffect(() => {
+    if (objectToEdit !== null) {
+      setDateAux(new Date(objectToEdit.originalDate).toLocaleDateString('pt-BR'))
+      setSelectedDate(new Date(objectToEdit.originalDate))
+      setInputValue({
+        money: objectToEdit.money,
+        description: objectToEdit.description,
+        date: new Date(objectToEdit.originalDate).toLocaleDateString('pt-BR'),
+      });
+      setCheckSelected(objectToEdit.transactionType);
+      setSelectedTab(objectToEdit.transactionType)
+    } else if(modalVisible && !objectToEdit){
+      setDateAux(new Date().toLocaleDateString('pt-BR'))
+    }
+  }, [modalVisible]);
 
   const handleSubmit = () => {
     setSent(true);
@@ -129,14 +133,9 @@ export default function ModalForm() {
     closeModal();
   };
 
-  const handleCheckBox = (value: string) => {
-    console.log(value)
-    setCheckSelected(value);
-  };
-
   return (
     <Modal visible={modalVisible} animationType="slide">
-      <KeyboardAwareScrollView contentContainerStyle={{ flexGrow: 1 }}>
+      <KeyboardAwareScrollView contentContainerStyle={styles.container}>
         <View style={styles.container}>
           <View style={styles.closeModal}>
             <Entypo
@@ -169,7 +168,7 @@ export default function ModalForm() {
                   <TextInput
                     style={styles.inputAmountMoney}
                     placeholder="Selecionar Data"
-                    value={inputValue.date || selectedDate.toLocaleDateString('pt-BR')}
+                    value={dateAux}
                     editable={false}
                     onChangeText={(textValue) => handleChange("date", textValue)}
                   />
@@ -179,6 +178,7 @@ export default function ModalForm() {
                     mode="date"
                     value={selectedDate || new Date()}
                     onChange={(event, date: any) => {
+                      // setDateAux(date.toLocaleDateString('pt-BR'))
                       handleDateChange(date);
                     }}
                   />
@@ -208,51 +208,17 @@ export default function ModalForm() {
                   </Text>
                 )}
               </View>
-              {/* <View>
-                <CheckBoxForm
-                  handleCheckBox={handleCheckBox}
-                  checkSelected={checkSelected}
-                />
-                {sent && <Text style={styles.errorCheck}>{errors.check}</Text>}
-              </View> */}
-                <View style={styles.containerTab}>
-                  {tabs.map((item) => {
-                    return (
-                      <LinearGradient
-                        key={item.name}
-                        start={{ x: 0.1, y: 0 }}
-                        end={{ x: 1, y: 1.2 }}
-                        colors={[
-                          item.type === selectedTab ? "#4f80c3" : "#fff",
-                          item.type === selectedTab ? "#c661eb" : "#fff",
-                          item.type === selectedTab ? "#ee8183" : "#fff",
-                        ]}
-                        style={styles.tabGradient}
-                      >
-                        <TouchableOpacity
-                          activeOpacity={1}
-                          style={styles.wrapTab}
-                          onPress={() => handleRestaurarTabPress(item.type)}
-                        >
-                          <Text
-                            style={[
-                              styles.titleTab,
-                              {
-                                color:
-                                  item.type === selectedTab
-                                    ? "#fff"
-                                    : Color.fontColorPrimary,
-                              },
-                            ]}
-                          >
-                            {item.name}
-                          </Text>
-                        </TouchableOpacity>
-                      </LinearGradient>
-                    );
-                  })}
-                </View>
-                {sent && <Text style={styles.errorCheck}>{errors.check}</Text>}
+              <View style={styles.containerTab}>
+                {tabs.map((item) => (
+                  <TabRenderer
+                    key={item.name}
+                    item={item}
+                    selectedTab={selectedTab}
+                    handleRestaurarTabPress={handleRestaurarTabPress}
+                  />
+                ))}
+              </View>
+              {sent && <Text style={styles.errorCheck}>{errors.check}</Text>}
             </View>
             <TouchableOpacity activeOpacity={0.8} onPress={handleSubmit}>
               <LinearGradient
@@ -272,23 +238,6 @@ export default function ModalForm() {
 }
 
 const styles = StyleSheet.create({
-  wrapTab: {
-    flex: 1,
-    borderRadius: 10,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  tabGradient: {
-    flex: 1,
-    borderRadius: 10,
-    margin: 3,
-  },
-  titleTab: {
-    fontWeight: "bold",
-    letterSpacing: 0.4,
-    fontSize: 13,
-    lineHeight: 15,
-  },
   containerTab: {
     backgroundColor: "#fff",
     marginTop: 20,
