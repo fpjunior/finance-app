@@ -95,6 +95,7 @@ export default function HomeScreen({ navigation }: Prop) {
   }
 
   const orderByRecent2 = () => {
+    
     setOrder(!order)
     let filterData;
     let mensage;
@@ -173,15 +174,12 @@ export default function HomeScreen({ navigation }: Prop) {
 
   const handleRefresh = async () => {
     setIsLoading(true);
-
     try {
       await updateData(data);
       showToast('Lista Atualizada');
     } catch (error) {
       console.log('Erro ao atualizar os dados:', error);
     }
-
-    setIsLoading(false);
   };
 
   return (
