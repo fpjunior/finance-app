@@ -11,7 +11,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { NavigationProp } from "@react-navigation/native";
 import { RootStackParamsList } from '../navigation/Navigation';
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-
+import { Entypo } from '@expo/vector-icons'; 
 type CardNavigationProp = NativeStackNavigationProp<
   RootStackParamsList,
   "HomeScreen"
@@ -101,19 +101,15 @@ export default function Card({ titleList, navigation }: Prop) {
       </LinearGradient>
        
         <View style={styles.div}>
-      {titleList && <Text style={styles.titleList}>{titleList}</Text>}
+      {/* {titleList && <Text style={styles.titleList}>{titleList}</Text>} */}
 
-      <TouchableOpacity
+      {/* <TouchableOpacity
           activeOpacity={1}
           style={styles.containerTotal2}
           onPress={() => {navigation?.navigate("SearchItemScreen")}}
         >
-          <Ionicons
-            name={eyeShow ? "ellipsis-vertical-outline" : "eye-off-outline"}
-            size={24}
-            color="black"
-          />
-        </TouchableOpacity>
+       <Entypo name="dots-three-horizontal" size={24} color="black" />
+        </TouchableOpacity> */}
 
         <Modal
         visible={isModalVisible}
@@ -163,14 +159,6 @@ const styles = StyleSheet.create({
   div: {
     flexDirection: "row", // Define a direção dos elementos como horizontal
     alignItems: "center", // Centraliza verticalmente os elementos
-    // justifyContent: "space-evenly", // Espaço igual entre os elementos
-    // ... outros estilos que você já tem
-    // 'flex-start'
-    // | 'flex-end'
-    // | 'center'
-    // | 'space-between'
-    // | 'space-around'
-    // | 'space-evenly'
   },
   container: {
     marginHorizontal: 24,
@@ -201,12 +189,12 @@ const styles = StyleSheet.create({
     marginTop: 10,
     gap: 8,
   },
-  total: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 30,
-    textAlign: "center",
-  },
+  // total: {
+  //   color: "#fff",
+  //   fontWeight: "bold",
+  //   fontSize: 70,
+  //   textAlign: "center",
+  // },
   containerFooter: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -233,7 +221,7 @@ const styles = StyleSheet.create({
   },
   money: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: "bold",
   },
   titleList: {

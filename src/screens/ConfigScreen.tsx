@@ -22,6 +22,7 @@ import * as FileSystem from 'expo-file-system';
 import * as DocumentPicker from 'expo-document-picker';
 import { dbBackup, restoreDataBackup, saveDataBackup } from "../store/storeBackup";
 import CardBackup from '../components/CardBackup';
+import { orderDateByMoreRecentRecorded } from "../util/orderRecordByDate.util";
 
 
 type TransactionsScreenProp = NativeStackNavigationProp<
@@ -127,15 +128,54 @@ export default function TransactionsScreen({ navigation }: Prop) {
     }
   };
 
+  const getDateAndFillOriginalDateToISOString = (data: any) => {
+    var meses: any = {
+      "jan.": 0,
+      "fev.": 1,
+      "mar.": 2,
+      "abr.": 3,
+      "mai.": 4,
+      "jun.": 5,
+      "jul.": 6,
+      "ago.": 7,
+      "set.": 8,
+      "out.": 9,
+      "nov.": 10,
+      "dez.": 11
+    };
+
+    data.map((e: any) => {
+      const partesData = e.date.split(" ");
+      const dia = parseInt(partesData[1]);
+      const mes = meses[partesData[2]?.toLowerCase()];
+      const ano = parseInt(partesData[3]);
+      const dateFormatted = new Date(ano, mes, dia).toISOString();
+      e.originalDate = dateFormatted
+      return
+    })
+
+    return data
+  }
+
+
+  // function orderDateByMoreRecentRecorded(a: any, b: any) {
+  //   const dataA: any = new Date(a.originalDate);
+  //   const dataB: any = new Date(b.originalDate);
+  //   return dataB - dataA; // Ordem decrescente para que os registros mais recentes fiquem no início
+  // }
+
+
   const downloadFromUrl = async () => {
+    let dataModified = data.sort(orderDateByMoreRecentRecorded)
     const dataSalvo = new Date().toLocaleString('pt-br').split("/").join('-').split(' ').join('-');
     const nomeArquivo = 'bkp-finance-app-' + dataSalvo + '.json';
-    const jsonData = JSON.stringify(data);
-    const quantidadeRegistros = data.length
-    const indiceComaBackup = data[0]?.date.indexOf(",");
-    const newDateBackup = data[0]?.date.substring(indiceComaBackup + 1);
-    const indiceComaBackup2 = data[data.length - 1]?.date.indexOf(",");
-    const newDateBackup2 = data[data.length - 1]?.date.substring(indiceComaBackup2 + 1);
+    const jsonData = JSON.stringify(dataModified);
+
+    const quantidadeRegistros = dataModified.length
+    const indiceComaBackup = dataModified[0]?.date.indexOf(",");
+    const newDateBackup = dataModified[0]?.date.substring(indiceComaBackup + 1);
+    const indiceComaBackup2 = dataModified[dataModified.length - 1]?.date.indexOf(",");
+    const newDateBackup2 = dataModified[dataModified.length - 1]?.date.substring(indiceComaBackup2 + 1);
     const rangeDateBackup = `De${newDateBackup2} a ${newDateBackup}`
 
     const result = await FileSystem.writeAsStringAsync(

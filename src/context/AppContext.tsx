@@ -16,6 +16,8 @@ interface AppContext {
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
   eyeShow: boolean;
   setEyeShow: React.Dispatch<React.SetStateAction<boolean>>;
+  order: boolean;
+  setOrder: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const TransactionContext = createContext({} as AppContext);
@@ -27,6 +29,7 @@ export const AppContext = ({ children }: { children: JSX.Element }) => {
   const { data } = useStoreTransaction();
   const [isLoading, setIsLoading] = useState(false);
   const [eyeShow, setEyeShow] = useState(true);
+  const [order, setOrder] = useState(true);
 
   useEffect(() => {
     setTimeout(() => setIsLoading(false), 500);
@@ -82,6 +85,8 @@ export const AppContext = ({ children }: { children: JSX.Element }) => {
         setIsLoading,
         eyeShow,
         setEyeShow,
+        order,
+        setOrder
       }}
     >
       {children}
@@ -104,6 +109,8 @@ export const useTransactionContext = () => {
     setIsLoading,
     eyeShow,
     setEyeShow,
+    order, 
+    setOrder,
   } = useContext(TransactionContext);
 
   return {
@@ -120,5 +127,7 @@ export const useTransactionContext = () => {
     setIsLoading,
     eyeShow,
     setEyeShow,
+    order,
+    setOrder
   };
 };

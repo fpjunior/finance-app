@@ -21,6 +21,9 @@ import React, { useState, useEffect } from "react";
 import { Transaction } from "../interface/interfaceTransaction";
 import { showToast, showToastWithGravity } from "../components/Toast";
 import MemoizedMyComponent from "../components/ListItemTransactions";
+import { orderDateByMoreOldRecorded, orderDateByMoreRecentRecorded } from "../util/orderRecordByDate.util";
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Entypo } from '@expo/vector-icons';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamsList,
@@ -36,12 +39,12 @@ export default function HomeScreen({ navigation }: Prop) {
   const [hasFilter, setHasfilter] = useState(false);
   const [filteredData, setFilteredData] = useState<Transaction[]>([]); // Estado para armazenar os dados filtrados
   const [originalData, setOriginalData] = useState<Transaction[]>(data);
-  const { handleEditTransaction, isLoading, setIsLoading } = useTransactionContext();
+  const { handleEditTransaction, isLoading, setIsLoading, order, setOrder } = useTransactionContext();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setTimeout(() => setLoading(false), 500);
-    const last30Records = data.slice(0, 5);
+    const last30Records = data.slice(0, 10);
     setFilteredData(last30Records);
     updateData(data);
     setOriginalData(data);
@@ -89,6 +92,22 @@ export default function HomeScreen({ navigation }: Prop) {
     } if (action == 'data') {
       return data
     }
+  }
+
+  const orderByRecent2 = () => {
+    setOrder(!order)
+    let filterData;
+    let mensage;
+    if (order) {
+      mensage = 'Ordenado por data mais recente'
+      filterData = originalData.sort(orderDateByMoreRecentRecorded)
+    } else {
+      mensage = 'Ordenado por data mais antiga'
+      filterData = originalData.sort(orderDateByMoreOldRecorded)
+    }
+    setFilteredData(filterData)
+    setHasfilter(true);
+    showToastWithGravity(mensage);
   }
 
   const filterByExpenses = () => {
@@ -225,7 +244,36 @@ export default function HomeScreen({ navigation }: Prop) {
             data={filteredData}
             keyExtractor={(_, index) => index.toString()}
             showsVerticalScrollIndicator={false}
-            ListHeaderComponent={<Card titleList="Últimas movimetações" navigation={navigation} />}
+            ListHeaderComponent={
+              <>
+                <Card titleList="Últimas movimetações" navigation={navigation} />
+                <View style={styles.headerList}>
+    
+                  <View style={styles.leftComponent}>
+                    <Text style={styles.titleList}>Últimas movimentações</Text>
+                  </View>
+                  <View style={styles.centerComponents}>
+                    <TouchableOpacity
+                      activeOpacity={1}
+                      style={styles.order}
+                      onPress={() => orderByRecent2()}
+                    >
+                      <MaterialCommunityIcons name={order ? "sort-calendar-descending" : "sort-calendar-ascending"} size={24} color="black" />
+                    </TouchableOpacity>
+                  </View>
+                  <View>
+                    <TouchableOpacity
+                      activeOpacity={1}
+                      style={styles.order}
+                      onPress={() => { navigation?.navigate("SearchItemScreen") }}
+                    >
+                      <Entypo name="dots-three-horizontal" size={24} color="black" />
+    
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </>
+            }
             contentContainerStyle={{ paddingBottom: 90 }}
             renderItem={({ item }) => {
               return <MemoizedMyComponent item={item} />;
@@ -262,10 +310,38 @@ export default function HomeScreen({ navigation }: Prop) {
 }
 
 const styles = StyleSheet.create({
+  titleList: {
+    fontSize: 17,
+    paddingHorizontal: 24,
+    marginTop: 20,
+    fontWeight: "bold",
+    letterSpacing: 0.4,
+    marginBottom: 15,
+    color: Color.fontColorPrimary,
+    textTransform: "capitalize",
+  },
+  headerList: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  leftComponent: {
+    flex: 1, // Para ocupar o espaço disponível e colar na extremidade esquerda
+  },
+  centerComponents: {
+    flexDirection: 'row', // Componentes centro alinhados lado a lado
+  },
+  rightComponent: {
+    flex: 1, // Para ocupar o espaço disponível e colar na extremidade direita
+    alignItems: 'flex-end', // Para alinhar conteúdo à direita
+  },
   container: {
     backgroundColor: Color.primary,
     flex: 1,
     paddingTop: 40,
+  },
+  order: {
+    marginHorizontal: 30,
   },
   containerHeader: {
     flexDirection: "row",
