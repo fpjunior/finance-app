@@ -38,14 +38,58 @@ export default function HomeScreen({ navigation }: Prop) {
   const [originalData, setOriginalData] = useState<Transaction[]>(data);
   const { handleEditTransaction, isLoading, setIsLoading, order, setOrder } = useTransactionContext();
   const [loading, setLoading] = useState(true);
+  const [dateEnd, setDateEnd] = useState('');
+  const [dateStart, setDateStart] = useState('');
+  const [totalIncome, setTotalIncome] = useState(0);
+  const [totalExpense, setTotalExpense] = useState(0);
+
 
   useEffect(() => {
     setTimeout(() => setLoading(false), 500);
-    const last30Records = data.slice(0, 10);
+    const last30Records = data.slice(0, 30);
     setFilteredData(last30Records);
+
+ 
+    getEndDateByFilter()
+    getStartDateByFilter()
+    getTotalIncomeByFilter()
+    getTotalExpenseByFilter()
+
     updateData(data);
     setOriginalData(data);
   }, [loading, data]);
+
+  const getStartDateByFilter = () =>{
+    let indiceComa2 = filteredData[0]?.date.indexOf(",");
+    let newDate2 = filteredData[0]?.date.substring(indiceComa2 + 1);
+    setDateStart(newDate2);
+  }
+
+  const getEndDateByFilter = () =>{
+    let indiceComa = filteredData[filteredData.length - 1]?.date.indexOf(",");
+    let newDate = filteredData[filteredData.length - 1]?.date.substring(indiceComa + 1);
+    setDateEnd(newDate);
+  }
+
+  const getTotalExpenseByFilter = () => {
+    const filterExpenses = filteredData.filter(
+      (item) => item.transactionType === "Expenses"
+    );
+    const totalExpenses = filterExpenses.reduce(
+      (accumulador, currentValue) => accumulador + Number(currentValue.money),
+      0
+    );
+    setTotalExpense(totalExpenses)
+  }
+
+  const getTotalIncomeByFilter = () => {
+    const filterIncome = filteredData.filter((item: any) => item.transactionType === "Income");
+    const totalIncome = filterIncome.reduce(
+      (accumulador, currentValue) => accumulador + Number(currentValue.money),
+      0
+    );
+    setTotalIncome(totalIncome)
+  }
 
   const handleDeleteTransaction = (description: string, id: string) => {
     Alert.alert("Tem certeza que deseja deletar?", `${description}`, [
@@ -103,10 +147,15 @@ export default function HomeScreen({ navigation }: Prop) {
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           <>
-            <Card titleList="Últimas movimetações" navigation={navigation} />
+            <Card dateStart={dateStart}
+              dateEnd={dateEnd}
+              totalIncomeFiltered={totalIncome}
+              totalExpenseFiltered={totalExpense}
+              titleList="Últimos 30 registros"
+              navigation={navigation} />
             <View style={styles.headerList}>
               <View style={styles.leftComponent}>
-                <Text style={styles.titleList}>Últimas movimentações</Text>
+                <Text style={styles.titleList}>Últimos 30 registros</Text>
               </View>
               <View style={styles.rightComponent}>
                 <TouchableOpacity
@@ -178,7 +227,7 @@ const styles = StyleSheet.create({
   headerList: {
     flexDirection: "row", // Isso alinha os componentes lado a lado
     justifyContent: "space-between", // Isso distribui o espaço entre os componentes
-    alignItems: "center", 
+    alignItems: "center",
   },
   leftComponent: {
     flex: 1, // Para ocupar o espaço disponível e colar na extremidade esquerda
@@ -197,8 +246,8 @@ const styles = StyleSheet.create({
   },
   order: {
     marginHorizontal: 30,
-     flexDirection: "row", // Isso alinha o ícone e o texto lado a lado
-    alignItems: "center", 
+    flexDirection: "row", // Isso alinha o ícone e o texto lado a lado
+    alignItems: "center",
   },
   containerHeader: {
     flexDirection: "row",

@@ -20,18 +20,24 @@ type CardNavigationProp = NativeStackNavigationProp<
 type Prop = {
   titleList?: string;
   navigation?: CardNavigationProp;
+  dateStart?: any;
+  dateEnd?: any;
+  totalIncomeFiltered?: any;
+  totalExpenseFiltered?: any;
 };
 
-export default function Card({ titleList, navigation }: Prop) {
+export default function Card({ titleList, navigation, dateStart, dateEnd, totalIncomeFiltered, totalExpenseFiltered }: Prop) {
   const { data } = useStoreTransaction();
   const { totalIncome, totalExpenses, total, eyeShow, setEyeShow } =
     useTransactionContext();
 
   let indiceComa = data[0]?.date.indexOf(",");
-  let newDate = data[0]?.date.substring(indiceComa + 1);
+  // let newDate = data[0]?.date.substring(indiceComa + 1);
+  let newDate = dateStart
 
   let indiceComa2 = data[data.length - 1]?.date.indexOf(",");
-  let newDate2 = data[data.length - 1]?.date.substring(indiceComa2 + 1);
+  // let newDate2 = data[data.length - 1]?.date.substring(indiceComa2 + 1);
+  let newDate2 = dateEnd;
 
   const [isModalVisible, setIsModalVisible] = useState(false);
 
@@ -82,7 +88,7 @@ export default function Card({ titleList, navigation }: Prop) {
             <View>
               <Text style={styles.title}>Entradas</Text>
               <Text style={styles.money}>
-                {eyeShow ? formatQuantity(totalIncome) : "******"}
+                {eyeShow ? formatQuantity(totalIncomeFiltered) : "******"}
               </Text>
             </View>
           </View>
@@ -93,7 +99,7 @@ export default function Card({ titleList, navigation }: Prop) {
             <View>
               <Text style={styles.title}>Saídas</Text>
               <Text style={styles.money}>
-                {eyeShow ? formatQuantity(totalExpenses) : "******"}
+                {eyeShow ? formatQuantity(totalExpenseFiltered) : "******"}
               </Text>
             </View>
           </View>
