@@ -138,6 +138,7 @@ export default function StatisticsScreen({ navigation }: Prop) {
               totalIncomeForMonth={totalIncomeForMonth}
               totalMonth={totalMonth}
             />
+            
             <CardMonthPrevious />
           </>
         ) : (

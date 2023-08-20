@@ -18,7 +18,9 @@ import { RootStackParamsList } from "../navigation/Navigation";
 import { useTransactionContext } from "../context/AppContext";
 import { formatQuantity } from "../helpers";
 import { AntDesign } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from "expo-linear-gradient";
+import { orderDateByMoreOldRecorded, orderDateByMoreRecentRecorded } from "../util/orderRecordByDate.util";
 
 type TransactionsScreenProp = NativeStackNavigationProp<
   RootStackParamsList,
@@ -37,7 +39,7 @@ export default function SearchScreen() {
   const [endDate, setEndDate2] = useState('');
   const [startDate, setStartDate] = useState('');
   const { data } = useStoreTransaction();
-  const { eyeShow, setEyeShow } = useTransactionContext();
+  const { eyeShow, setEyeShow, order, setOrder } = useTransactionContext();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -62,7 +64,7 @@ export default function SearchScreen() {
         (accumulador, currentValue) => accumulador + Number(currentValue.money),
         0
       );
-      
+
       setTotalIncome(totalIncomeDynamic)
       setTotalExpense(totalExpenseDynamic)
 
@@ -77,71 +79,194 @@ export default function SearchScreen() {
     handleSearch();
   }, [textInput, loading]);
 
+  const convertDate = (dataString: any, action: string) => {
+    var meses: any = {
+      "jan.": 0,
+      "fev.": 1,
+      "mar.": 2,
+      "abr.": 3,
+      "mai.": 4,
+      "jun.": 5,
+      "jul.": 6,
+      "ago.": 7,
+      "set.": 8,
+      "out.": 9,
+      "nov.": 10,
+      "dez.": 11
+    };
+
+    const partesData = dataString.split(" ");
+    const dia = parseInt(partesData[1]);
+    const mes = meses[partesData[2]?.toLowerCase()];
+    const ano = parseInt(partesData[3]);
+
+    const data = new Date(ano, mes, dia);
+    if (action == 'mes') {
+      return mes;
+    } if (action == 'data') {
+      return data
+    }
+  }
+
+  const filterByMonth = () => {
+    const mesAtual = new Date().getMonth();
+    const filterData = data.filter((e: Transaction) => {
+      const mesRegistro = convertDate(e.date, 'mes');
+      return mesRegistro === mesAtual;
+    });
+    setNewData(filterData)
+  };
+
+  const resetFilter = () => {
+    setNewData(data)
+    // setHasfilter(false)
+    // showToastWithGravity('Mostrando todos os registros')
+  };
+
+  const filterByExpenses = () => {
+    const filteredExpenses = data.filter((e: Transaction) => e.transactionType === 'Expenses');
+    setNewData(filteredExpenses);
+  };
+
+  const filterByIncomes = () => {
+    const filteredIncomes = data.filter((e: Transaction) => e.transactionType === 'Income');
+    setNewData(filteredIncomes);
+  };
+
+  const getWeekNumber = (dateString: any) => {
+    const date = new Date(dateString);
+    const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
+    const pastDaysOfYear = (Number(date) - Number(firstDayOfYear)) / 86400000;
+    const weekNumber = Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+    return weekNumber;
+  };
+
+  const filterByWeek = () => {
+    const semanaAtual = getWeekNumber(new Date().toString());
+    const filterData = data.filter((registro) => {
+      const semanaRegistro = getWeekNumber(convertDate(registro.date, 'data'));
+      return semanaRegistro === semanaAtual;
+    });
+    setNewData(filterData)
+  }
+
+  const orderByRecent2 = () => {
+    
+    setOrder(!order)
+    let filterData;
+    let mensage;
+    if (order) {
+      mensage = 'Ordenado por data mais recente'
+      filterData = newData.sort(orderDateByMoreRecentRecorded)
+    } else {
+      mensage = 'Ordenado por data mais antiga'
+      filterData = newData.sort(orderDateByMoreOldRecorded)
+    }
+    setNewData(filterData)
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.container}>
-        {newData.length > 0 ? (
-          <>
-             <LinearGradient
-        start={{ x: 0.1, y: 0 }}
-        end={{ x: 1, y: 1.2 }}
-        colors={["#4f80c3", "#c661eb", "#ee8183"]}
-        style={styles.container}
-      >
-        {data.length > 0 ? (
-          <Text style={styles.dates}>
-            {endDate} - {startDate}
-          </Text>
-        ) : (
-          <Text style={styles.dataEmpty}>No hay Ingresos ni Gastos</Text>
-        )}
-        <TouchableOpacity
-          onPress={() => setEyeShow(!eyeShow)}
-          activeOpacity={1}
-          style={styles.containerTotal}
-        >
-          {/* <Text style={styles.total}>
+
+        <>
+          <LinearGradient
+            start={{ x: 0.1, y: 0 }}
+            end={{ x: 1, y: 1.2 }}
+            colors={["#4f80c3", "#c661eb", "#ee8183"]}
+            style={styles.container}
+          >
+            {data.length > 0 ? (
+              <Text style={styles.dates}>
+                {endDate} - {startDate}
+              </Text>
+            ) : (
+              <Text style={styles.dataEmpty}>No hay Ingresos ni Gastos</Text>
+            )}
+            <TouchableOpacity
+              onPress={() => setEyeShow(!eyeShow)}
+              activeOpacity={1}
+              style={styles.containerTotal}
+            >
+              {/* <Text style={styles.total}>
             {eyeShow ? formatQuantity(total) : "******"}
           </Text> */}
-          <Ionicons
-            name={eyeShow ? "eye-outline" : "eye-off-outline"}
-            size={24}
-            color="#fff"
-          />
-        </TouchableOpacity>
-        <View style={styles.containerFooter}>
-          <View style={styles.wrapContentLeftEndRight}>
-            <View style={[styles.wrapArrow]}>
-              <AntDesign name="arrowup" size={15} color={Color.income} />
+              <Ionicons
+                name={eyeShow ? "eye-outline" : "eye-off-outline"}
+                size={24}
+                color="#fff"
+              />
+            </TouchableOpacity>
+            <View style={styles.containerFooter}>
+              <View style={styles.wrapContentLeftEndRight}>
+                <View style={[styles.wrapArrow]}>
+                  <AntDesign name="arrowup" size={15} color={Color.income} />
+                </View>
+                <View>
+                  <Text style={styles.title}>Entradas</Text>
+                  <Text style={styles.money}>
+                    {eyeShow ? formatQuantity(totalIncome) : "******"}
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.wrapContentLeftEndRight}>
+                <View style={[styles.wrapArrow]}>
+                  <AntDesign name="arrowdown" size={15} color={Color.expense} />
+                </View>
+                <View>
+                  <Text style={styles.title}>Saídas</Text>
+                  <Text style={styles.money}>
+                    {eyeShow ? formatQuantity(totalExpense) : "******"}
+                  </Text>
+                </View>
+              </View>
             </View>
-            <View>
-              <Text style={styles.title}>Entradas</Text>
-              <Text style={styles.money}>
-                {eyeShow ? formatQuantity(totalIncome) : "******"}
-              </Text>
-            </View>
-          </View>
-          <View style={styles.wrapContentLeftEndRight}>
-            <View style={[styles.wrapArrow]}>
-              <AntDesign name="arrowdown" size={15} color={Color.expense} />
-            </View>
-            <View>
-              <Text style={styles.title}>Saídas</Text>
-              <Text style={styles.money}>
-                {eyeShow ? formatQuantity(totalExpense) : "******"}
-              </Text>
-            </View>
-          </View>
-        </View>
-      </LinearGradient>
-          </>
-        ) : (
-          <View style={styles.dataEmpty}>
-            <Text style={styles.titleDataEmpty}>Sem nenhuma entrada</Text>
-          </View>
-        )}
+          </LinearGradient>
+        </>
+
+
       </View>
       <KeyboardAwareScrollView showsVerticalScrollIndicator={false}>
+        <View style={styles.containerHeader2}>
+          <TouchableOpacity
+            style={styles.mes}
+            activeOpacity={0.8}
+            onPress={() => filterByExpenses()}
+          >
+            <Text>Despesas</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.mes}
+            activeOpacity={0.8}
+            onPress={() => filterByIncomes()}
+          >
+            <Text>Receitas</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.mes}
+            activeOpacity={0.8}
+            onPress={() => resetFilter()}
+          >
+            <Text>Todos</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.mes}
+            activeOpacity={0.8}
+            onPress={() => filterByMonth()}
+          >
+            <Text>Mês</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.mes}
+            activeOpacity={0.8}
+            onPress={() => filterByWeek()}
+          >
+            <Text>Semana</Text>
+          </TouchableOpacity>
+        </View>
         <View style={styles.containerInput}>
           <TextInput
             style={styles.input}
@@ -155,16 +280,62 @@ export default function SearchScreen() {
             color={Color.icon}
             style={styles.iconSearch}
           />
+
         </View>
-        {newData.map((item, index) => (
-          <ListItemTransactions key={index} item={item} />
-        ))}
+        <View style={styles.centerComponents}>
+        <Text style={styles.titleDataEmpty2}>Histórico</Text>
+
+          <TouchableOpacity
+            activeOpacity={1}
+            style={styles.order}
+            onPress={() => orderByRecent2()}
+          >
+            <MaterialCommunityIcons name={order ? "sort-calendar-descending" : "sort-calendar-ascending"} size={24} color="black" />
+          </TouchableOpacity>
+        </View>
+
+        {
+          newData.length > 0 ? (
+            newData.map((item, index) => (
+              <ListItemTransactions key={index} item={item} />
+            ))
+          ) : (
+            <View style={styles.dataEmpty}>
+              <Text style={styles.titleDataEmpty}>Sem nenhuma entrada</Text>
+            </View>
+          )
+        }
+
+
       </KeyboardAwareScrollView>
+
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  order: {
+    marginHorizontal: 30,
+  },
+  centerComponents: {
+    flexDirection: 'row', // Componentes centro alinhados lado a lado
+  },
+  containerHeader2: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    gap: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+  },
+  mes: {
+    backgroundColor: "#b3b3b33b",
+    height: 30,
+    width: 60,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 7,
+    elevation: 12,
+  },
   dates: {
     color: "#fff",
     fontWeight: "600",
@@ -179,6 +350,12 @@ const styles = StyleSheet.create({
     letterSpacing: 0.4,
     color: Color.fontColorPrimary,
     fontSize: 20,
+  },
+  titleDataEmpty2: {
+    fontWeight: "bold",
+    color: Color.fontColorPrimary,
+    fontSize: 20,
+    paddingLeft: 25
   },
   // card: {
   //   backgroundColor: "#cccccc",

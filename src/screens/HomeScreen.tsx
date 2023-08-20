@@ -19,10 +19,8 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamsList } from "../navigation/Navigation";
 import React, { useState, useEffect } from "react";
 import { Transaction } from "../interface/interfaceTransaction";
-import { showToast, showToastWithGravity } from "../components/Toast";
+import { showToast } from "../components/Toast";
 import MemoizedMyComponent from "../components/ListItemTransactions";
-import { orderDateByMoreOldRecorded, orderDateByMoreRecentRecorded } from "../util/orderRecordByDate.util";
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Entypo } from '@expo/vector-icons';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
@@ -36,7 +34,6 @@ type Prop = {
 
 export default function HomeScreen({ navigation }: Prop) {
   const { data, deleteTransaction, updateData, filterData } = useStoreTransaction();
-  const [hasFilter, setHasfilter] = useState(false);
   const [filteredData, setFilteredData] = useState<Transaction[]>([]); // Estado para armazenar os dados filtrados
   const [originalData, setOriginalData] = useState<Transaction[]>(data);
   const { handleEditTransaction, isLoading, setIsLoading, order, setOrder } = useTransactionContext();
@@ -65,113 +62,6 @@ export default function HomeScreen({ navigation }: Prop) {
     ]);
   };
 
-  const convertDate = (dataString: any, action: string) => {
-    var meses: any = {
-      "jan.": 0,
-      "fev.": 1,
-      "mar.": 2,
-      "abr.": 3,
-      "mai.": 4,
-      "jun.": 5,
-      "jul.": 6,
-      "ago.": 7,
-      "set.": 8,
-      "out.": 9,
-      "nov.": 10,
-      "dez.": 11
-    };
-
-    const partesData = dataString.split(" ");
-    const dia = parseInt(partesData[1]);
-    const mes = meses[partesData[2]?.toLowerCase()];
-    const ano = parseInt(partesData[3]);
-
-    const data = new Date(ano, mes, dia);
-    if (action == 'mes') {
-      return mes;
-    } if (action == 'data') {
-      return data
-    }
-  }
-
-  const orderByRecent2 = () => {
-    
-    setOrder(!order)
-    let filterData;
-    let mensage;
-    if (order) {
-      mensage = 'Ordenado por data mais recente'
-      filterData = originalData.sort(orderDateByMoreRecentRecorded)
-    } else {
-      mensage = 'Ordenado por data mais antiga'
-      filterData = originalData.sort(orderDateByMoreOldRecorded)
-    }
-    setFilteredData(filterData)
-    setHasfilter(true);
-    showToastWithGravity(mensage);
-  }
-
-  const filterByExpenses = () => {
-    const filteredExpenses = originalData.filter((e: Transaction) => e.transactionType === 'Expenses');
-    // setFilteredData(filteredExpenses);
-    setFilteredData(filteredExpenses);
-    setHasfilter(true)
-    showToastWithGravity('Mostrando todas as receitas')
-  };
-
-  const filterByIncomes = () => {
-    const filteredIncomes = originalData.filter((e: Transaction) => e.transactionType === 'Income');
-    setFilteredData(filteredIncomes);
-    setHasfilter(true)
-    showToastWithGravity('Mostrando todas as despesas')
-  };
-
-  const resetFilter = () => {
-    setFilteredData(originalData)
-    setHasfilter(false)
-    showToastWithGravity('Mostrando todos os registros')
-  };
-
-  const getWeekNumber = (dateString: any) => {
-    const date = new Date(dateString);
-    const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
-    const pastDaysOfYear = (Number(date) - Number(firstDayOfYear)) / 86400000;
-    const weekNumber = Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
-    return weekNumber;
-  };
-
-  const filterByWeek = () => {
-    const semanaAtual = getWeekNumber(new Date().toString());
-    const filterData = originalData.filter((registro) => {
-      const semanaRegistro = getWeekNumber(convertDate(registro.date, 'data'));
-      return semanaRegistro === semanaAtual;
-    });
-    setFilteredData(filterData)
-    setHasfilter(true)
-    showToastWithGravity('Mostrando registros da semana atual')
-  }
-
-  const filterByMonth = () => {
-    const mesAtual = new Date().getMonth();
-    const filterData = originalData.filter((e: Transaction) => {
-      const mesRegistro = convertDate(e.date, 'mes');
-      return mesRegistro === mesAtual;
-    });
-    setFilteredData(filterData)
-    setHasfilter(true);
-    showToastWithGravity('Mostrando registros do mês atual');
-  };
-
-  const dia = () => {
-    const dataAtual = new Date() // O valor retornado varia de 0 a 11 (0 para janeiro, 1 para fevereiro, etc.)
-    const filterData = data.filter((e: any) => {
-      const dataRegistro = convertDate(e.date, 'data');
-      return dataRegistro.toString().split(' ').slice(0, 4).join(' ') === dataAtual.toString().split(' ').slice(0, 4).join(' ');
-    })
-    setFilteredData(filterData)
-    setHasfilter(true)
-  }
-
   const handleRefresh = async () => {
     setIsLoading(true);
     try {
@@ -184,130 +74,97 @@ export default function HomeScreen({ navigation }: Prop) {
 
   return (
     <SafeAreaView style={styles.container}>
-          <View style={styles.containerHeader}>
+      <View style={styles.containerHeader}>
 
-            <TouchableOpacity
-              style={styles.mes}
-              activeOpacity={0.8}
-              onPress={() => filterByMonth()}
-            >
-              <Text>Mês</Text>
-            </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.wrapIcon}
+          activeOpacity={0.8}
+          onPress={() => navigation.navigate("TransactionsScreen")}
+        >
+          <Ionicons name="ios-swap-horizontal" size={18} color={Color.icon} />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.wrapIcon}
+          activeOpacity={0.8}
+          onPress={() => navigation.navigate("StatisticsScreen")}
+        >
+          <Ionicons name="stats-chart-outline" size={15} color={Color.icon} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.wrapIcon} activeOpacity={0.8}
+          onPress={() => navigation.navigate("ConfigScreen")}>
+          <Ionicons name="settings" size={15} color={Color.icon} />
+        </TouchableOpacity>
+      </View>
 
-            <TouchableOpacity
-              style={styles.mes}
-              activeOpacity={0.8}
-              onPress={() => filterByExpenses()}
-            >
-              <Text>Despesas</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.mes}
-              activeOpacity={0.8}
-              onPress={() => filterByIncomes()}
-            >
-              <Text>Receitas</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.mes}
-              activeOpacity={0.8}
-              onPress={() => resetFilter()}
-            >
-              <Text>Todos</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.wrapIcon}
-              activeOpacity={0.8}
-              onPress={() => navigation.navigate("TransactionsScreen")}
-            >
-              <Ionicons name="ios-swap-horizontal" size={18} color={Color.icon} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.wrapIcon}
-              activeOpacity={0.8}
-              onPress={() => navigation.navigate("SearchItemScreen")}
-            >
-              <Ionicons name="stats-chart-outline" size={15} color={Color.icon} />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.wrapIcon} activeOpacity={0.8}
-              onPress={() => navigation.navigate("ConfigScreen")}>
-              <Ionicons name="settings" size={15} color={Color.icon} />
-            </TouchableOpacity>
-          </View>
-          
-          <SwipeListView
-            useFlatList={true}
-            data={filteredData}
-            keyExtractor={(_, index) => index.toString()}
-            showsVerticalScrollIndicator={false}
-            ListHeaderComponent={
-              <>
-                <Card titleList="Últimas movimetações" navigation={navigation} />
-                <View style={styles.headerList}>
-    
-                  <View style={styles.leftComponent}>
-                    <Text style={styles.titleList}>Últimas movimentações</Text>
-                  </View>
-                  <View style={styles.centerComponents}>
-                    <TouchableOpacity
-                      activeOpacity={1}
-                      style={styles.order}
-                      onPress={() => orderByRecent2()}
-                    >
-                      <MaterialCommunityIcons name={order ? "sort-calendar-descending" : "sort-calendar-ascending"} size={24} color="black" />
-                    </TouchableOpacity>
-                  </View>
-                  <View>
-                    <TouchableOpacity
-                      activeOpacity={1}
-                      style={styles.order}
-                      onPress={() => { navigation?.navigate("SearchItemScreen") }}
-                    >
-                      <Entypo name="dots-three-horizontal" size={24} color="black" />
-    
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </>
-            }
-            contentContainerStyle={{ paddingBottom: 90 }}
-            renderItem={({ item }) => {
-              return <MemoizedMyComponent item={item} />;
-            }}
-            renderHiddenItem={({ item }, rowMap) => (
-
-              <View style={styles.hiddenItem}>
+      <SwipeListView
+        useFlatList={true}
+        data={filteredData}
+        keyExtractor={(_, index) => index.toString()}
+        showsVerticalScrollIndicator={false}
+        ListHeaderComponent={
+          <>
+            <Card titleList="Últimas movimetações" navigation={navigation} />
+            <View style={styles.headerList}>
+              <View style={styles.leftComponent}>
+                <Text style={styles.titleList}>Últimas movimentações</Text>
+              </View>
+              <View style={styles.rightComponent}>
                 <TouchableOpacity
-                  style={styles.iconHiddenContainer}
-                  activeOpacity={0.8}
-                  onPress={() => handleEditTransaction(item.id)}
+                  activeOpacity={1}
+                  style={styles.order}
+                  onPress={() => { navigation?.navigate("SearchItemScreen") }}
                 >
-                  <Feather name="edit" size={18} color="#19A7CE" />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.iconHiddenContainer}
-                  activeOpacity={0.8}
-                  onPress={() => handleDeleteTransaction(item.description, item.id)}
-                >
-                  <AntDesign name="delete" size={18} color={Color.expense} />
+                  <Text style={styles.verMaisText}>MOSTRAR MAIS</Text>
+                  <Entypo name="dots-three-vertical" size={18} color="black" />
                 </TouchableOpacity>
               </View>
-            )}
-            previewRowKey={data[0]?.id}
-            rightOpenValue={-120}
-            disableRightSwipe
-            refreshControl={
-              <RefreshControl refreshing={isLoading} onRefresh={handleRefresh} />
-            }
-          />
-          <FloatingButton />
+            </View>
+          </>
+        }
+        contentContainerStyle={{ paddingBottom: 90 }}
+        renderItem={({ item }) => {
+          return <MemoizedMyComponent item={item} />;
+        }}
+        renderHiddenItem={({ item }, rowMap) => (
+
+          <View style={styles.hiddenItem}>
+            <TouchableOpacity
+              style={styles.iconHiddenContainer}
+              activeOpacity={0.8}
+              onPress={() => handleEditTransaction(item.id)}
+            >
+              <Feather name="edit" size={18} color="#19A7CE" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.iconHiddenContainer}
+              activeOpacity={0.8}
+              onPress={() => handleDeleteTransaction(item.description, item.id)}
+            >
+              <AntDesign name="delete" size={16} color={Color.expense} />
+            </TouchableOpacity>
+          </View>
+        )}
+        previewRowKey={data[0]?.id}
+        rightOpenValue={-120}
+        disableRightSwipe
+        refreshControl={
+          <RefreshControl refreshing={isLoading} onRefresh={handleRefresh} />
+        }
+      />
+      <FloatingButton />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  verMaisText: {
+    marginLeft: 1, // Espaço entre o ícone e o texto
+    padding: 1, // Adicione algum espaço de toque ao redor do texto
+    color: "#355296",//
+    fontSize: 18,
+    textTransform: "capitalize",
+    fontWeight: "bold",
+  },
   titleList: {
     fontSize: 17,
     paddingHorizontal: 24,
@@ -319,9 +176,9 @@ const styles = StyleSheet.create({
     textTransform: "capitalize",
   },
   headerList: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row", // Isso alinha os componentes lado a lado
+    justifyContent: "space-between", // Isso distribui o espaço entre os componentes
+    alignItems: "center", 
   },
   leftComponent: {
     flex: 1, // Para ocupar o espaço disponível e colar na extremidade esquerda
@@ -340,6 +197,8 @@ const styles = StyleSheet.create({
   },
   order: {
     marginHorizontal: 30,
+     flexDirection: "row", // Isso alinha o ícone e o texto lado a lado
+    alignItems: "center", 
   },
   containerHeader: {
     flexDirection: "row",

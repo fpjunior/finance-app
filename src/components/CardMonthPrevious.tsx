@@ -13,7 +13,7 @@ export default function CardMonthPrevious() {
 
   //filtro toda la actividad del mes pasado
   const filterPreviousMonth = data.filter(
-    (item) => item.currentMonth === previousMonthName
+    (item) => item.currentMonth ===  `${previousMonthName}.`
   );
 
   //filtro los entradas del mes pasado
@@ -42,7 +42,7 @@ export default function CardMonthPrevious() {
     totalIncomePreviousMonth - totalExpensePreviousMonth;
 
   return (
-    <CardStaticsResumen
+       <CardStaticsResumen
       totalMonth={totalPreviousMonth}
       totalIncomeForMonth={totalIncomePreviousMonth}
       totalExpenseForMonth={totalExpensePreviousMonth}
