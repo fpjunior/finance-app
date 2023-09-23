@@ -43,41 +43,41 @@ export default function SearchScreen() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // if (textInput.length === 0) {
-    //   setNewData([]);
-    //   return;
-    // }
     setTimeout(() => setLoading(false), 500);
     const handleSearch = () => {
       const listResult = data.filter((item) =>
         item.description.toLowerCase().includes(textInput.toLowerCase())
       );
       setNewData(listResult);
-
-      const filterIncome = listResult.filter((item: any) => item.transactionType === "Income");
-      const filterExpense = listResult.filter((item: any) => item.transactionType === "Expenses");
-      const totalExpenseDynamic = filterExpense.reduce(
-        (accumulador, currentValue) => accumulador + Number(currentValue.money),
-        0
-      );
-      const totalIncomeDynamic = filterIncome.reduce(
-        (accumulador, currentValue) => accumulador + Number(currentValue.money),
-        0
-      );
-
-      setTotalIncome(totalIncomeDynamic)
-      setTotalExpense(totalExpenseDynamic)
-
-      let indiceComa2 = listResult[listResult.length - 1]?.date.indexOf(",");
-      let indiceComa = listResult[0]?.date.indexOf(",");
-      let endDate = listResult[listResult.length - 1]?.date.substring(indiceComa2 + 1);
-      let startDate = listResult[0]?.date.substring(indiceComa + 1);
-      setEndDate2(endDate)
-      setStartDate(startDate)
+      genericFunction(listResult)
+  
     };
 
     handleSearch();
   }, [textInput, loading]);
+
+  const genericFunction = (listResult: any) =>{
+    const filterIncome = listResult.filter((item: any) => item.transactionType === "Income");
+    const filterExpense = listResult.filter((item: any) => item.transactionType === "Expenses");
+    const totalExpenseDynamic = filterExpense.reduce(
+      (accumulador: any, currentValue: any) => accumulador + Number(currentValue.money),
+      0
+    );
+    const totalIncomeDynamic = filterIncome.reduce(
+      (accumulador: any, currentValue: any) => accumulador + Number(currentValue.money),
+      0
+    );
+
+    setTotalIncome(totalIncomeDynamic)
+    setTotalExpense(totalExpenseDynamic)
+
+    let indiceComa2 = listResult[listResult.length - 1]?.date.indexOf(",");
+    let indiceComa = listResult[0]?.date.indexOf(",");
+    let endDate = listResult[listResult.length - 1]?.date.substring(indiceComa2 + 1);
+    let startDate = listResult[0]?.date.substring(indiceComa + 1);
+    setEndDate2(endDate)
+    setStartDate(startDate)
+  }
 
   const convertDate = (dataString: any, action: string) => {
     var meses: any = {
@@ -110,36 +110,52 @@ export default function SearchScreen() {
 
   const filterByMonth = () => {
     const mesAtual = new Date().getMonth();
-    const filterData = data.filter((e: Transaction) => {
+    const listResult = data.filter((e: Transaction) => {
       const mesRegistro = convertDate(e.date, 'mes');
       return mesRegistro === mesAtual;
     });
-    setNewData(filterData)
+
+    setNewData(listResult)
+    genericFunction(listResult)
   };
 
   const resetFilter = () => {
     setNewData(data)
-    // setHasfilter(false)
-    // showToastWithGravity('Mostrando todos os registros')
   };
 
   const filterByExpenses = () => {
     const filteredExpenses = data.filter((e: Transaction) => e.transactionType === 'Expenses');
     setNewData(filteredExpenses);
+    genericFunction(filteredExpenses)
   };
 
   const filterByIncomes = () => {
     const filteredIncomes = data.filter((e: Transaction) => e.transactionType === 'Income');
     setNewData(filteredIncomes);
+    genericFunction(filteredIncomes)
   };
 
   const getWeekNumber = (dateString: any) => {
-    const date = new Date(dateString);
-    const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
-    const pastDaysOfYear = (Number(date) - Number(firstDayOfYear)) / 86400000;
-    const weekNumber = Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+    const date: any = new Date(dateString);
+    date.setHours(0, 0, 0, 0); // Define as horas, minutos, segundos e milissegundos para zero
+  
+    const dayOfWeek = date.getDay(); // 0 (Domingo) a 6 (Sábado)
+  
+    const firstDayOfYear: any = new Date(date.getFullYear(), 0, 1);
+    const pastDaysOfYear = Math.floor((date - firstDayOfYear) / 86400000); // Milissegundos em um dia: 24 * 60 * 60 * 1000 = 86400000
+  
+    let weekNumber;
+  
+    if (dayOfWeek === 0) {
+      // Se for um Domingo, atribua à semana anterior
+      weekNumber = Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7) - 1;
+    } else {
+      weekNumber = Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+    }
+  
     return weekNumber;
   };
+  
 
   const filterByWeek = () => {
     const semanaAtual = getWeekNumber(new Date().toString());
@@ -148,6 +164,8 @@ export default function SearchScreen() {
       return semanaRegistro === semanaAtual;
     });
     setNewData(filterData)
+    genericFunction(filterData)
+    
   }
 
   const orderByRecent2 = () => {
