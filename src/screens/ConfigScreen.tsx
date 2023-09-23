@@ -167,7 +167,7 @@ export default function TransactionsScreen({ navigation }: Prop) {
 
   const downloadFromUrl = async () => {
     let dataModified = data.sort(orderDateByMoreRecentRecorded)
-    const dataSalvo = new Date().toLocaleString('pt-br').split("/").join('-').split(' ').join('-');
+    const dataSalvo = new Date().toLocaleString('pt-br').split("/").join('/').split(' ').join(' ');
     const nomeArquivo = 'bkp-finance-app-' + dataSalvo + '.json';
     const jsonData = JSON.stringify(dataModified);
 
@@ -222,7 +222,7 @@ export default function TransactionsScreen({ navigation }: Prop) {
         const fileExtension = file.name.split('.').pop();
 
         if (fileExtension === 'json') {
-          const dataRestore = new Date().toLocaleString('pt-br').split("/").join('-').split(' ').join('-');
+          const dataRestore = new Date().toLocaleString('pt-br').split("/").join('/').split(' ').join(' ');
           const response = await fetch(file.uri);
           const fileContent = await response.text();
           const nomeArquivoRestore = file.name
