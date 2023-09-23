@@ -54,7 +54,7 @@ export default function TransactionsScreen({ navigation }: Prop) {
               color={Color.icon}
             />
           </TouchableOpacity>
-          <Text style={styles.titleHeader}>transferencias</Text>
+          <Text style={styles.titleHeader}>transferências</Text>
         </View>
         <View style={styles.headerRight}>
           <TouchableOpacity
