@@ -302,22 +302,30 @@ export default function SearchScreen() {
           />
 
         </View>
-        <View style={styles.centerComponents}>
-          <Text style={styles.titleDataEmpty2}>Histórico</Text>
+        <View style={styles.centeredView}>
 
-          <TouchableOpacity
-            activeOpacity={1}
-            style={styles.order}
-            onPress={() => orderByRecent2()}
-          >
-            <MaterialCommunityIcons name={order ? "sort-calendar-descending" : "sort-calendar-ascending"} size={24} color="black" />
-          </TouchableOpacity>
           {textInput !== '' && (
             <Text style={styles.textSmall}>
-              Exibindo {displayeData.length} registros com {textInput} 
+              Exibindo {displayeData.length} registros com '{textInput}' de {endDate} a {startDate}
             </Text>
           )}
         </View>
+        <View style={styles.centerComponents}>
+  <Text style={styles.titleDataEmpty2}>Histórico</Text>
+
+  <View style={styles.row}>
+    <View style={{ width: 16 }} />
+
+    <TouchableOpacity
+      activeOpacity={1}
+      style={styles.order}
+      onPress={() => orderByRecent2()}
+    >
+      <MaterialCommunityIcons name={order ? "sort-calendar-descending" : "sort-calendar-ascending"} size={24} color="black" />
+    </TouchableOpacity>
+  </View>
+</View>
+
 
         {
           displayeData.length > 0 ? (
@@ -344,6 +352,8 @@ const styles = StyleSheet.create({
   },
   centerComponents: {
     flexDirection: 'row', // Componentes centro alinhados lado a lado
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   containerHeader2: {
     flexDirection: "row",
@@ -351,6 +361,10 @@ const styles = StyleSheet.create({
     gap: 14,
     paddingVertical: 10,
     paddingHorizontal: 24,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   mes: {
     backgroundColor: "#b3b3b33b",
@@ -379,7 +393,7 @@ const styles = StyleSheet.create({
   titleDataEmpty2: {
     fontWeight: "bold",
     color: Color.fontColorPrimary,
-    fontSize: 20,
+    fontSize: 15,
     paddingLeft: 25
   },
   textSmall: {
@@ -408,7 +422,7 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: Color.primary,
     flex: 1,
-    paddingTop: 10,
+    paddingTop: 3,
     marginLeft: 8,
     marginRight: 8,
     borderRadius: 12
@@ -416,11 +430,11 @@ const styles = StyleSheet.create({
   containerInput: {
     backgroundColor: "#fff",
     marginHorizontal: 24,
-    marginTop: 15,
+    marginTop: 1,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: Color.icon,
-    marginBottom: 20,
+    marginBottom: 10,
   },
   input: {
     height: 40,
@@ -458,6 +472,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 10,
     gap: 8,
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
   },
   // total: {
   //   color: "#fff",
