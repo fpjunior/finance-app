@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -21,6 +21,7 @@ import { AntDesign } from "@expo/vector-icons";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from "expo-linear-gradient";
 import { orderDateByMoreOldRecorded, orderDateByMoreRecentRecorded } from "../util/orderRecordByDate.util";
+import RNDateTimePicker from '@react-native-community/datetimepicker';
 
 type TransactionsScreenProp = NativeStackNavigationProp<
   RootStackParamsList,
@@ -41,6 +42,9 @@ export default function SearchScreen() {
   const { data } = useStoreTransaction();
   const { eyeShow, setEyeShow, order, setOrder } = useTransactionContext();
   const [loading, setLoading] = useState(true);
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [dateAux, setDateAux] = useState("");
 
   useEffect(() => {
     setTimeout(() => setLoading(false), 500);
@@ -185,6 +189,20 @@ export default function SearchScreen() {
     setdisplayeData(filterData)
   }
 
+  const openDatePicker = () => {
+    setIsDatePickerOpen(true);
+  };
+
+  const closeDatePicker = () => {
+    setIsDatePickerOpen(false);
+  };
+
+  const handleDateChange = useCallback((date: any) => {
+    closeDatePicker();
+    setSelectedDate(date);
+    setDateAux(date.toLocaleDateString('pt-BR'));
+  }, []);
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.container}>
@@ -248,6 +266,29 @@ export default function SearchScreen() {
       </View>
       <KeyboardAwareScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.containerHeader2}>
+        <TouchableOpacity
+            style={styles.mes}
+            activeOpacity={0.8}
+            onPress={openDatePicker}
+          >
+            <Text>Período</Text>
+          </TouchableOpacity>
+
+          <View>
+            
+                {isDatePickerOpen && (
+                  <RNDateTimePicker
+                  display="spinner"
+                    mode="date"
+                    value={selectedDate || new Date()}
+                    onChange={(event, date: any) => {
+                      // setDateAux(date.toLocaleDateString('pt-BR'))
+                      handleDateChange(date);
+                    }}
+                  />
+                )}
+              </View>
+
           <TouchableOpacity
             style={styles.mes}
             activeOpacity={0.8}
