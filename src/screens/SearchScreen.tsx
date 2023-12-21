@@ -22,6 +22,11 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from "expo-linear-gradient";
 import { orderDateByMoreOldRecorded, orderDateByMoreRecentRecorded } from "../util/orderRecordByDate.util";
 import RNDateTimePicker from '@react-native-community/datetimepicker';
+import DateRangePicker from "../components/DateRangePicker";
+
+import { Calendar, LocaleConfig } from 'react-native-calendars';
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+
 
 type TransactionsScreenProp = NativeStackNavigationProp<
   RootStackParamsList,
@@ -32,12 +37,23 @@ type Prop = {
   navigation: TransactionsScreenProp;
 };
 
+LocaleConfig.locales['pt'] = {
+  monthNames: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
+  monthNamesShort: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+  dayNames: ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'],
+  dayNamesShort: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'],
+  today: 'Hoje'
+};
+
+LocaleConfig.defaultLocale = 'pt';
+
+
 export default function SearchScreen() {
   const [textInput, setTextInput] = useState("");
   const [displayeData, setdisplayeData] = useState<Transaction[]>([]);
   const [totalIncome, setTotalIncome] = useState(0);
   const [totalExpense, setTotalExpense] = useState(0);
-  const [endDate, setEndDate2] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [startDate, setStartDate] = useState('');
   const { data } = useStoreTransaction();
   const { eyeShow, setEyeShow, order, setOrder } = useTransactionContext();
@@ -45,6 +61,11 @@ export default function SearchScreen() {
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [dateAux, setDateAux] = useState("");
+
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+  const [startDate2, setStartDate2] = useState(new Date());
+  const [endDate2, setEndDate2] = useState(new Date());
+
 
   useEffect(() => {
     setTimeout(() => setLoading(false), 500);
@@ -61,6 +82,25 @@ export default function SearchScreen() {
 
     handleSearch();
   }, [textInput, loading]);
+
+  const hideDatePicker = () => {
+    setDatePickerVisibility(false);
+  };
+
+  const showDatePicker = () => {
+    setDatePickerVisibility(true);
+  };
+
+  const handleConfirm = (date: any) => {
+    if (!startDate2 || date < startDate2) {
+      setStartDate2(date);
+      setEndDate2(new Date());
+    } else {
+      setEndDate2(date);
+    }
+
+    hideDatePicker();
+  };
 
   const genericFunction = (listResult: any) => {
     const filterIncome = listResult.filter((item: any) => item.transactionType === "Income");
@@ -81,7 +121,7 @@ export default function SearchScreen() {
     let indiceComa = listResult[0]?.date.indexOf(",");
     let endDate = listResult[listResult.length - 1]?.date.substring(indiceComa2 + 1);
     let startDate = listResult[0]?.date.substring(indiceComa + 1);
-    setEndDate2(endDate)
+    setEndDate(endDate)
     setStartDate(startDate)
   }
 
@@ -165,7 +205,7 @@ export default function SearchScreen() {
 
   const filterByWeek = () => {
     const semanaAtual = getWeekNumber(new Date().toString());
-    const filterData = data.filter((registro) => {
+    const filterData = data.filter((registro: any) => {
       const semanaRegistro = getWeekNumber(convertDate(registro.date, 'data'));
       return semanaRegistro === semanaAtual;
     });
@@ -173,6 +213,29 @@ export default function SearchScreen() {
     genericFunction(filterData)
 
   }
+
+  const filterByPeriodo = () => {
+    // Certifique-se de que startDate2 e endDate2 estão definidos corretamente
+    if (!startDate2 || !endDate2) {
+      // Lidar com a situação em que as datas não estão definidas
+      console.error('Datas de início ou fim não estão definidas.');
+      return;
+    }
+
+    // Filtra os registros que estão no intervalo [startDate2, endDate2]
+    const filterData = data.filter((registro) => {
+      const registroDate = new Date(registro.originalDate); // Substitua 'data' pelo campo real que contém as datas em seus registros
+
+      // Verifica se a data do registro está dentro do intervalo
+      return registroDate >= new Date(startDate2) && new Date(registroDate) <= new Date(endDate2);
+    });
+
+    // Atualiza o estado com os dados filtrados
+    setdisplayeData(filterData);
+
+    // Chama a função genérica passando os dados filtrados
+    genericFunction(filterData);
+  };
 
   const orderByRecent2 = () => {
 
@@ -266,28 +329,28 @@ export default function SearchScreen() {
       </View>
       <KeyboardAwareScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.containerHeader2}>
-        <TouchableOpacity
+          <TouchableOpacity
             style={styles.mes}
             activeOpacity={0.8}
-            onPress={openDatePicker}
+            onPress={showDatePicker}
           >
             <Text>Período</Text>
           </TouchableOpacity>
 
           <View>
-            
-                {isDatePickerOpen && (
-                  <RNDateTimePicker
-                  display="spinner"
-                    mode="date"
-                    value={selectedDate || new Date()}
-                    onChange={(event, date: any) => {
-                      // setDateAux(date.toLocaleDateString('pt-BR'))
-                      handleDateChange(date);
-                    }}
-                  />
-                )}
-              </View>
+
+            {isDatePickerOpen && (
+              <RNDateTimePicker
+                display="spinner"
+                mode="date"
+                value={selectedDate || new Date()}
+                onChange={(event, date: any) => {
+                  // setDateAux(date.toLocaleDateString('pt-BR'))
+                  handleDateChange(date);
+                }}
+              />
+            )}
+          </View>
 
           <TouchableOpacity
             style={styles.mes}
@@ -343,6 +406,8 @@ export default function SearchScreen() {
           />
 
         </View>
+        {/* <DateRangePicker /> */}
+
         <View style={styles.centeredView}>
 
           {textInput !== '' && (
@@ -351,21 +416,49 @@ export default function SearchScreen() {
             </Text>
           )}
         </View>
+
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+
+          {new Date().toISOString().split('T')[0].split("-").reverse().join("/") != new Date(startDate2).toISOString().split('T')[0].split("-").reverse().join("/") && (
+            <Text>Data Inicial: {startDate2.toISOString().split('T')[0].split("-").reverse().join("/")}</Text>
+          )}
+          {new Date().toISOString().split('T')[0].split("-").reverse().join("/") != endDate2.toISOString().split('T')[0].split("-").reverse().join("/") && (
+            <Text>Data Final: {endDate2.toISOString().split('T')[0].split("-").reverse().join("/")}</Text>
+          )}
+
+          {new Date().toISOString().split('T')[0].split("-").reverse().join("/") != endDate2.toISOString().split('T')[0].split("-").reverse().join("/") && (
+            <TouchableOpacity
+              style={styles.mes}
+              activeOpacity={0.8}
+              onPress={() => filterByPeriodo()}
+            >
+              <Text>OK</Text>
+            </TouchableOpacity>
+          )}
+             <DateTimePickerModal
+            isVisible={isDatePickerVisible}
+            display="spinner"
+            mode="date"
+            onConfirm={handleConfirm}
+            onCancel={hideDatePicker}
+          />
+
+        </View>
         <View style={styles.centerComponents}>
-  <Text style={styles.titleDataEmpty2}>Histórico</Text>
+          <Text style={styles.titleDataEmpty2}>Histórico</Text>
 
-  <View style={styles.row}>
-    <View style={{ width: 16 }} />
+          <View style={styles.row}>
+            <View style={{ width: 16 }} />
 
-    <TouchableOpacity
-      activeOpacity={1}
-      style={styles.order}
-      onPress={() => orderByRecent2()}
-    >
-      <MaterialCommunityIcons name={order ? "sort-calendar-descending" : "sort-calendar-ascending"} size={24} color="black" />
-    </TouchableOpacity>
-  </View>
-</View>
+            <TouchableOpacity
+              activeOpacity={1}
+              style={styles.order}
+              onPress={() => orderByRecent2()}
+            >
+              <MaterialCommunityIcons name={order ? "sort-calendar-descending" : "sort-calendar-ascending"} size={24} color="black" />
+            </TouchableOpacity>
+          </View>
+        </View>
 
 
         {
@@ -438,20 +531,10 @@ const styles = StyleSheet.create({
     paddingLeft: 25
   },
   textSmall: {
-    color: 'navy', 
+    color: 'navy',
     fontStyle: 'italic',
     fontSize: 12,
   },
-  // card: {
-  //   backgroundColor: "#cccccc",
-  //   marginHorizontal: 24,
-  //   marginTop: 0,
-  //   borderRadius: 10,
-  //   justifyContent: "center",
-  //   alignItems: "center",
-  //   height: 160,
-  //   marginBottom: 5,
-  // },
   date: {
     fontSize: 19,
     color: Color.fontColorPrimary,
@@ -555,14 +638,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
   },
-  // titleList: {
-  //   fontSize: 17,
-  //   paddingHorizontal: 24,
-  //   marginTop: 20,
-  //   fontWeight: "bold",
-  //   letterSpacing: 0.4,
-  //   marginBottom: 15,
-  //   color: Color.fontColorPrimary,
-  //   textTransform: "capitalize",
-  // },
 });
