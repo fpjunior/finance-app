@@ -33,7 +33,7 @@ type Prop = {
 
 export default function SearchScreen() {
   const [textInput, setTextInput] = useState("");
-  const [newData, setNewData] = useState<Transaction[]>([]);
+  const [displayeData, setdisplayeData] = useState<Transaction[]>([]);
   const [totalIncome, setTotalIncome] = useState(0);
   const [totalExpense, setTotalExpense] = useState(0);
   const [endDate, setEndDate2] = useState('');
@@ -48,15 +48,17 @@ export default function SearchScreen() {
       const listResult = data.filter((item) =>
         item.description.toLowerCase().includes(textInput.toLowerCase())
       );
-      setNewData(listResult);
+      const last30Records = listResult.slice(0, 30);
+
+      setdisplayeData(last30Records);
       genericFunction(listResult)
-  
+
     };
 
     handleSearch();
   }, [textInput, loading]);
 
-  const genericFunction = (listResult: any) =>{
+  const genericFunction = (listResult: any) => {
     const filterIncome = listResult.filter((item: any) => item.transactionType === "Income");
     const filterExpense = listResult.filter((item: any) => item.transactionType === "Expenses");
     const totalExpenseDynamic = filterExpense.reduce(
@@ -100,11 +102,11 @@ export default function SearchScreen() {
     const mes = meses[partesData[2]?.toLowerCase()];
     const ano = parseInt(partesData[3]);
 
-    const data = new Date(ano, mes, dia);
+    const date = new Date(ano, mes, dia);
     if (action == 'mes') {
       return mes;
     } if (action == 'data') {
-      return data
+      return date
     }
   }
 
@@ -115,47 +117,47 @@ export default function SearchScreen() {
       return mesRegistro === mesAtual;
     });
 
-    setNewData(listResult)
+    setdisplayeData(listResult)
     genericFunction(listResult)
   };
 
   const resetFilter = () => {
-    setNewData(data)
+    setdisplayeData(data)
   };
 
   const filterByExpenses = () => {
     const filteredExpenses = data.filter((e: Transaction) => e.transactionType === 'Expenses');
-    setNewData(filteredExpenses);
+    setdisplayeData(filteredExpenses);
     genericFunction(filteredExpenses)
   };
 
   const filterByIncomes = () => {
     const filteredIncomes = data.filter((e: Transaction) => e.transactionType === 'Income');
-    setNewData(filteredIncomes);
+    setdisplayeData(filteredIncomes);
     genericFunction(filteredIncomes)
   };
 
   const getWeekNumber = (dateString: any) => {
     const date: any = new Date(dateString);
     date.setHours(0, 0, 0, 0); // Define as horas, minutos, segundos e milissegundos para zero
-  
+
     const dayOfWeek = date.getDay(); // 0 (Domingo) a 6 (Sábado)
-  
+
     const firstDayOfYear: any = new Date(date.getFullYear(), 0, 1);
     const pastDaysOfYear = Math.floor((date - firstDayOfYear) / 86400000); // Milissegundos em um dia: 24 * 60 * 60 * 1000 = 86400000
-  
+
     let weekNumber;
-  
+
     if (dayOfWeek === 0) {
       // Se for um Domingo, atribua à semana anterior
       weekNumber = Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7) - 1;
     } else {
       weekNumber = Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
     }
-  
+
     return weekNumber;
   };
-  
+
 
   const filterByWeek = () => {
     const semanaAtual = getWeekNumber(new Date().toString());
@@ -163,24 +165,24 @@ export default function SearchScreen() {
       const semanaRegistro = getWeekNumber(convertDate(registro.date, 'data'));
       return semanaRegistro === semanaAtual;
     });
-    setNewData(filterData)
+    setdisplayeData(filterData)
     genericFunction(filterData)
-    
+
   }
 
   const orderByRecent2 = () => {
-    
+
     setOrder(!order)
     let filterData;
     let mensage;
     if (order) {
       mensage = 'Ordenado por data mais recente'
-      filterData = newData.sort(orderDateByMoreRecentRecorded)
+      filterData = displayeData.sort(orderDateByMoreRecentRecorded)
     } else {
       mensage = 'Ordenado por data mais antiga'
-      filterData = newData.sort(orderDateByMoreOldRecorded)
+      filterData = displayeData.sort(orderDateByMoreOldRecorded)
     }
-    setNewData(filterData)
+    setdisplayeData(filterData)
   }
 
   return (
@@ -301,7 +303,7 @@ export default function SearchScreen() {
 
         </View>
         <View style={styles.centerComponents}>
-        <Text style={styles.titleDataEmpty2}>Histórico</Text>
+          <Text style={styles.titleDataEmpty2}>Histórico</Text>
 
           <TouchableOpacity
             activeOpacity={1}
@@ -310,11 +312,16 @@ export default function SearchScreen() {
           >
             <MaterialCommunityIcons name={order ? "sort-calendar-descending" : "sort-calendar-ascending"} size={24} color="black" />
           </TouchableOpacity>
+          {textInput !== '' && (
+            <Text style={styles.textSmall}>
+              Exibindo {displayeData.length} registros com {textInput} 
+            </Text>
+          )}
         </View>
 
         {
-          newData.length > 0 ? (
-            newData.map((item, index) => (
+          displayeData.length > 0 ? (
+            displayeData.map((item, index) => (
               <ListItemTransactions key={index} item={item} />
             ))
           ) : (
@@ -374,6 +381,11 @@ const styles = StyleSheet.create({
     color: Color.fontColorPrimary,
     fontSize: 20,
     paddingLeft: 25
+  },
+  textSmall: {
+    color: 'navy', 
+    fontStyle: 'italic',
+    fontSize: 12,
   },
   // card: {
   //   backgroundColor: "#cccccc",
