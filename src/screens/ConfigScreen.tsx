@@ -178,14 +178,14 @@ export default function TransactionsScreen({ navigation }: Prop) {
     const newDateBackup2 = dataModified[dataModified.length - 1]?.date.substring(indiceComaBackup2 + 1);
     const rangeDateBackup = `De${newDateBackup2} a ${newDateBackup}`
 
-    const result = await FileSystem.writeAsStringAsync(
-      FileSystem.documentDirectory + nomeArquivo,
-      jsonData,
-      {
-        encoding: FileSystem.EncodingType.UTF8,
-      }
-    );
-    console.log(result);
+    // const result = await FileSystem.writeAsStringAsync(
+    //   FileSystem.documentDirectory + nomeArquivo,
+    //   jsonData,
+    //   {
+    //     encoding: FileSystem.EncodingType.UTF8,
+    //   }
+    // );
+    // console.log(result);
     saveDataBackup(dataSalvo, nomeArquivo, quantidadeRegistros, 1, rangeDateBackup, pathBackup);
     setBackupData({ dataSalvo, nomeArquivo, quantidadeRegistros, isBackup: 1, rangeDateBackup, pathBackup }),
       save(FileSystem.documentDirectory + nomeArquivo, nomeArquivo, "application/json");

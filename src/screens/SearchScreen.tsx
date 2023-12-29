@@ -37,7 +37,7 @@ type Prop = {
   navigation: TransactionsScreenProp;
 };
 
-LocaleConfig.locales['pt'] = {
+LocaleConfig.locales['pt-br'] = {
   monthNames: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
   monthNamesShort: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
   dayNames: ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'],
@@ -45,8 +45,7 @@ LocaleConfig.locales['pt'] = {
   today: 'Hoje'
 };
 
-LocaleConfig.defaultLocale = 'pt';
-
+LocaleConfig.defaultLocale = 'pt-br';
 
 export default function SearchScreen() {
   const [textInput, setTextInput] = useState("");
@@ -63,8 +62,9 @@ export default function SearchScreen() {
   const [dateAux, setDateAux] = useState("");
 
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-  const [startDate2, setStartDate2] = useState(new Date());
-  const [endDate2, setEndDate2] = useState(new Date());
+  const [isFilterByDate, setIsFilterByDate] = useState(false);
+  const [startDate2, setStartDate2] = useState(null);
+  const [endDate2, setEndDate2] = useState(null);
 
 
   useEffect(() => {
@@ -88,13 +88,14 @@ export default function SearchScreen() {
   };
 
   const showDatePicker = () => {
+    // setIsFilterByDate(true)
     setDatePickerVisibility(true);
   };
 
   const handleConfirm = (date: any) => {
     if (!startDate2 || date < startDate2) {
       setStartDate2(date);
-      setEndDate2(new Date());
+      setEndDate2(null);
     } else {
       setEndDate2(date);
     }
@@ -234,7 +235,8 @@ export default function SearchScreen() {
     setdisplayeData(filterData);
 
     // Chama a função genérica passando os dados filtrados
-    genericFunction(filterData);
+    genericFunction(filterData.sort(orderDateByMoreOldRecorded));
+    
   };
 
   const orderByRecent2 = () => {
@@ -265,6 +267,10 @@ export default function SearchScreen() {
     setSelectedDate(date);
     setDateAux(date.toLocaleDateString('pt-BR'));
   }, []);
+
+  const formatarData = (data: any) => {
+    return new Date(data).toLocaleString().split(' ')[0];
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -332,7 +338,7 @@ export default function SearchScreen() {
           <TouchableOpacity
             style={styles.mes}
             activeOpacity={0.8}
-            onPress={showDatePicker}
+            onPress={() => setIsFilterByDate(true)}
           >
             <Text>Período</Text>
           </TouchableOpacity>
@@ -419,14 +425,34 @@ export default function SearchScreen() {
 
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
 
-          {new Date().toISOString().split('T')[0].split("-").reverse().join("/") != new Date(startDate2).toISOString().split('T')[0].split("-").reverse().join("/") && (
-            <Text>Data Inicial: {startDate2.toISOString().split('T')[0].split("-").reverse().join("/")}</Text>
-          )}
-          {new Date().toISOString().split('T')[0].split("-").reverse().join("/") != endDate2.toISOString().split('T')[0].split("-").reverse().join("/") && (
-            <Text>Data Final: {endDate2.toISOString().split('T')[0].split("-").reverse().join("/")}</Text>
-          )}
+            {isFilterByDate && (
+          <View style={styles.centerComponents} >
+              <TextInput
+                style={styles.inputAmountMoney}
+                placeholder="R$10.000.00"
+                selectionColor="#4f80c3"
+                keyboardType="numeric"
+                value={startDate2 ? formatarData(startDate2) : 'data inicio'}
+                onPressIn={showDatePicker}
+              />
+            <TextInput
+            style={styles.inputAmountMoney}
+            placeholder="R$10.000.00"
+            selectionColor="#4f80c3"
+              keyboardType="numeric"
+              value={endDate2 ? formatarData(endDate2) : 'data fim'}
+              onPressIn={showDatePicker}
+              />
+          </View>
+              )}
 
-          {new Date().toISOString().split('T')[0].split("-").reverse().join("/") != endDate2.toISOString().split('T')[0].split("-").reverse().join("/") && (
+          {/* {isFilterByDate && (
+            <Text>Data Inicial: {formatarData(startDate2)}</Text>
+          )}
+          {formatarData(new Date()) != formatarData(endDate2) && (
+            <Text>Data Final: {formatarData(endDate2)}</Text>
+          )} */}
+
             <TouchableOpacity
               style={styles.mes}
               activeOpacity={0.8}
@@ -434,8 +460,7 @@ export default function SearchScreen() {
             >
               <Text>OK</Text>
             </TouchableOpacity>
-          )}
-             <DateTimePickerModal
+          <DateTimePickerModal
             isVisible={isDatePickerVisible}
             display="spinner"
             mode="date"
@@ -602,6 +627,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 10,
+  },
+  inputAmountMoney: {
+    height: 40,
+    backgroundColor: "#fff",
+    width: "30%",
+    marginBottom: 40,
+    borderRadius: 20,
+    paddingHorizontal: 20,
+    alignSelf: "center",
+    marginRight: 10,
+    marginLeft: 10,
   },
   // total: {
   //   color: "#fff",
