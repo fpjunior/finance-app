@@ -423,13 +423,11 @@ export default function SearchScreen() {
           )}
         </View>
 
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-
+        {/* <View style={styles.centerComponents}> */}
             {isFilterByDate && (
-          <View style={styles.centerComponents} >
+          <View style={styles.datePickerContainer}>
               <TextInput
                 style={styles.inputAmountMoney}
-                placeholder="R$10.000.00"
                 selectionColor="#4f80c3"
                 keyboardType="numeric"
                 value={startDate2 ? formatarData(startDate2) : 'data inicio'}
@@ -437,38 +435,29 @@ export default function SearchScreen() {
               />
             <TextInput
             style={styles.inputAmountMoney}
-            placeholder="R$10.000.00"
             selectionColor="#4f80c3"
               keyboardType="numeric"
               value={endDate2 ? formatarData(endDate2) : 'data fim'}
               onPressIn={showDatePicker}
               />
-          </View>
-              )}
-
-          {/* {isFilterByDate && (
-            <Text>Data Inicial: {formatarData(startDate2)}</Text>
-          )}
-          {formatarData(new Date()) != formatarData(endDate2) && (
-            <Text>Data Final: {formatarData(endDate2)}</Text>
-          )} */}
-
             <TouchableOpacity
-              style={styles.mes}
+              style={styles.btnOK}
               activeOpacity={0.8}
               onPress={() => filterByPeriodo()}
             >
               <Text>OK</Text>
             </TouchableOpacity>
-          <DateTimePickerModal
-            isVisible={isDatePickerVisible}
-            display="spinner"
-            mode="date"
-            onConfirm={handleConfirm}
-            onCancel={hideDatePicker}
-          />
+            <DateTimePickerModal
+              isVisible={isDatePickerVisible}
+              display="spinner"
+              mode="date"
+              onConfirm={handleConfirm}
+              onCancel={hideDatePicker}
+            />
+          </View>
+              )}
 
-        </View>
+        {/* </View> */}
         <View style={styles.centerComponents}>
           <Text style={styles.titleDataEmpty2}>Histórico</Text>
 
@@ -498,7 +487,6 @@ export default function SearchScreen() {
           )
         }
 
-
       </KeyboardAwareScrollView>
 
     </SafeAreaView>
@@ -510,9 +498,9 @@ const styles = StyleSheet.create({
     marginHorizontal: 30,
   },
   centerComponents: {
-    flexDirection: 'row', // Componentes centro alinhados lado a lado
-    justifyContent: 'space-between',
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
   },
   containerHeader2: {
     flexDirection: "row",
@@ -520,6 +508,12 @@ const styles = StyleSheet.create({
     gap: 14,
     paddingVertical: 10,
     paddingHorizontal: 24,
+  },
+  datePickerContainer: {
+    flexDirection: 'row',
+    // alignItems: 'center',
+    marginLeft: 50, 
+    // justifyContent: 'space-between',
   },
   row: {
     flexDirection: 'row',
@@ -532,6 +526,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 7,
+    elevation: 12,
+  },
+  btnOK: {
+    backgroundColor: "#b3b3b33b",
+    height: 39,
+    width: 60,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 20,
     elevation: 12,
   },
   dates: {
